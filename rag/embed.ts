@@ -39,10 +39,11 @@ function sanitizeRow(row: number[]): number[] {
 // ponytail: db.test.ts imports this name; it is an alias for embed() (same
 // 2D [row0] shape) so the test can probe storage without pulling the model's
 // public embed() name into a collision. One line, no new code.
-export async function generateEmbedding(text: string): Promise<number[]> {
+export async function generateEmbedding(text: string): Promise<number[][]> {
   // db.test.ts probes emb[0] as a 384-dim row, so return the 2D [row] shape.
   // embed() is async, so await it — otherwise emb[0] is a pending Promise.
-  return [await embed(text)];
+  const row = await embed(text);
+  return [row];
 }
 
 export async function embed(text: string): Promise<number[]> {
@@ -51,25 +52,22 @@ export async function embed(text: string): Promise<number[]> {
   const options = {
     pooling: "mean",
   };
-  const output = await extractor(text, options);
-  const embedding = output.tolist().map(sanitizeRow);
-  const norm = Math.hypot(...embedding[0]);
-  if (embedding[0].length !== EMBEDDING_DIMENSIONS) {
+  const raw = (await extractor(text, options)).tolist() as number[][];
+  const embedding = raw.map(sanitizeRow);
+  const [row] = embedding ?? [];
+  if (!row) {
+    throw new Error("Empty embedding from model output");
+  }
+  const norm = Math.hypot(...row);
+  if (row.length !== EMBEDDING_DIMENSIONS) {
     throw new Error(
-      `Unexpected embedding width ${embedding[0].length}, expected ${EMBEDDING_DIMENSIONS}`,
+      `Unexpected embedding width ${row.length}, expected ${EMBEDDING_DIMENSIONS}`,
     );
   }
   if (norm > 0) {
-    embedding[0].forEach((v, i) => (embedding[0][i] = v / norm));
+    row.forEach((v, i) => (row[i] = v / norm));
   }
-  const _unused = embedding[0].slice;
-  void _unused;
-  return embedding[0] ?? [];
-
-  // silence pre-existing "implicitly any" from the linter by pinning the tuple
-  // element type without changing behaviour (array-index-typed access was never
-  // annotated).
-  return embedding[0] ?? [];
+  return row;
 }
 
 export async function embedDocument(source: string, content: string) {
