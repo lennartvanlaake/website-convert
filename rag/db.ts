@@ -106,7 +106,13 @@ export function insertDocChunk(sourceId: number, content: string) {
   return Number(value.lastInsertRowid);
 }
 
-export function insertDocVector(chunkId: number | bigint, embedding: number[]) {
+// embedding is a Float32Array or number[] row (or the [row] wrapper — flatten
+// handles all). Float32Array is the natural fixed-dim numeric type, so accept it
+// explicitly rather than forcing plain number[].
+export function insertDocVector(
+  chunkId: number | bigint,
+  embedding: Float32Array | number[],
+) {
   // ponytail: store as binary vec_f32 (official sqlite-vec bun convention),
   // NOT JSON.stringify — vec0 auto-parses TEXT columns as JSON on read and
   // JSON.stringify() crashes with "Unable to parse JSON string" (verified).
@@ -124,7 +130,7 @@ export function insertDocVector(chunkId: number | bigint, embedding: number[]) {
 
 // search rag using an embedded query (vec0 KNN + JOIN back for text)
 export function dbSearch(
-  embeddedQuery: number[],
+  embeddedQuery: Float32Array | number[],
   maxResults: number,
 ): SearchResult[] {
   // KNN clause below needs SQL-level interpolation — vec0 has no query builder and

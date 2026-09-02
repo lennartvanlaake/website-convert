@@ -66,26 +66,26 @@ describe("setup DB", () => {
     const chunk = await insertDocChunk(doc, "about coffee");
 
     // Build two embeddings in-process: one near +x, one near +y.
-    const nearX = new Float32Array(EMBEDDING_DIMENSIONS);
+    const nearX = new Array(EMBEDDING_DIMENSIONS).fill(0);
     nearX[0] = 1;
-    const nearY = new Float32Array(EMBEDDING_DIMENSIONS);
+    const nearY = new Array(EMBEDDING_DIMENSIONS).fill(0);
     nearY[1] = 1;
 
     await insertDocVector(chunk, [nearX]);
     await insertDocVector(chunk, [nearY]);
 
     // Query near +x: nearX should rank first, then nearY.
-    const qX = new Float32Array(EMBEDDING_DIMENSIONS);
+    const qX = new Array(EMBEDDING_DIMENSIONS).fill(0);
     qX[0] = 1;
     const res = await dbSearch([qX], 10);
     expect(res.length).toBe(2);
-    const dist = res.map((r) => Number(r.distance));
+    const dist = res.map((r) => r.distance);
     expect(dist[0]).toBeLessThanOrEqual(dist[1]);
     expect((res[0] as { content: string }).content).toContain("coffee");
 
     // dbSearch must not truncate the stored vector to a single float:
     // the nearY row (dim 1) must still match a +y query.
-    const qY = new Float32Array(EMBEDDING_DIMENSIONS);
+    const qY = new Array(EMBEDDING_DIMENSIONS).fill(0);
     qY[1] = 1;
     const resY = await dbSearch([qY], 10);
     expect(resY.length).toBe(2);
