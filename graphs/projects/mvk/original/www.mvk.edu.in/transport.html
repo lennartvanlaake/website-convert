@@ -1,0 +1,521 @@
+<!DOCTYPE html><!-- This site was created in Webflow. https://webflow.com --><!-- Last Published: Wed Jun 03 2026 13:21:23 GMT+0000 (Coordinated Universal Time) --><html data-wf-domain="www.mvk.edu.in" data-wf-page="6865832115216409c8c209cb" data-wf-site="681b6c6c0a5d7331d78f05dd"><head><meta charset="utf-8"/><link href="https://cdn.prod.website-files.com" rel="preconnect" crossorigin="anonymous"/><title>Transport</title><meta content="Transport" property="og:title"/><meta content="Transport" name="twitter:title"/><meta content="width=device-width, initial-scale=1" name="viewport"/><meta content="Webflow" name="generator"/><link href="https://cdn.prod.website-files.com/681b6c6c0a5d7331d78f05dd/css/mvk-site.webflow.shared.fd45d5690.css" rel="stylesheet" type="text/css" integrity="sha384-/UXVaQa6PvZzI0DLbLt6+Hu2HnWeVkJh9lOUExNSJHCT4Z+rpL4Ws/m+r8xcsX0q" crossorigin="anonymous"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link href="https://fonts.gstatic.com" rel="preconnect" crossorigin="anonymous"/><script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js" type="text/javascript"></script><script type="text/javascript">WebFont.load({  google: {    families: ["Montserrat:100,100italic,200,200italic,300,300italic,400,400italic,500,500italic,600,600italic,700,700italic,800,800italic,900,900italic","Inter:300,400,500,600,700"]  }});</script><script type="text/javascript">!function(o,c){var n=c.documentElement,t=" w-mod-";n.className+=t+"js",("ontouchstart"in o||o.DocumentTouch&&c instanceof DocumentTouch)&&(n.className+=t+"touch")}(window,document);</script><link href="https://cdn.prod.website-files.com/681b6c6c0a5d7331d78f05dd/682708b371f74186d015214a_LOGO_MVK.jpg" rel="shortcut icon" type="image/x-icon"/><link href="https://cdn.prod.website-files.com/681b6c6c0a5d7331d78f05dd/6827087988701d357cc02ceb_LOGO_MVK.jpg" rel="apple-touch-icon"/><!-- Keep this css code to improve the font quality-->
+<style>
+  * {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -o-font-smoothing: antialiased;
+}
+</style></head><body><div class="page-wrapper"><div id="close-chat" class="code-embed-2 w-embed w-script"><script>
+// Wait for Webflow to initialize
+document.addEventListener('DOMContentLoaded', function() {
+  if (typeof jQuery !== 'undefined') {
+    // Handle modal close button click
+    jQuery(document).on('click', '#modal-close-button', function(event) {
+      event.preventDefault();
+      // Close the form modal
+      jQuery("#form-modal").hide();
+    });
+
+    // Handle existing whatsapp button close
+    jQuery(document).on('click', '#close-chat', function(event) {
+      event.preventDefault();
+      jQuery("#whatsapp-button").click();
+    });
+  }
+});
+</script>
+
+<style>
+ /* Container for select */
+  .select-container {
+    position: relative;
+    width: 100%;
+  }
+
+  /* Custom select styling */
+  .custom-select {
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    padding-right: 40px !important;
+    width: 100% !important;
+    cursor: pointer;
+  }
+
+  /* Arrow styling with improved animation */
+  .select-container::after {
+    content: '';
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    width: 10px;
+    height: 10px;
+    border-right: 2px solid #666;
+    border-bottom: 2px solid #666;
+    pointer-events: none;
+    transform-origin: center;
+    /* Smoother animation */
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Default state (pointing down) */
+    transform: translateY(-70%) rotate(45deg);
+  }
+
+  /* Arrow animation when select is open */
+  .select-container:focus-within::after {
+    /* Rotated state (pointing up) */
+    transform: translateY(-30%) rotate(-135deg);
+    border-color: #2563eb;
+  }
+
+  /* Hover effect */
+  .select-container:hover::after {
+    border-color: #333;
+  }
+
+  /* Remove default arrow in IE */
+  select::-ms-expand {
+    display: none;
+  }
+
+  /* Optional: Style for disabled state */
+  .custom-select:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+
+  /* Optional: Custom background color when open */
+  .custom-select:focus {
+    border-color: #2563eb;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+  }
+@keyframes buttonPulse {
+    0% {
+      transform: rotate(90deg) translate3d(0px, 0px, 0px) scale3d(1, 1, 1);
+    }
+    50% {
+      transform: rotate(90deg) translate3d(0px, -8px, 0px) scale3d(1.0375, 1.0375, 1);
+    }
+    100% {
+      transform: rotate(90deg) translate3d(0px, 0px, 0px) scale3d(1, 1, 1);
+    }
+  }
+  /* Existing styles Form Button */
+  .from_button {
+  
+    z-index: 99;
+    background-color: var(--_primitives---colors--violet-blue);
+    text-align: center;
+    white-space: pre-wrap;
+    word-break: break-all;
+    cursor: pointer;
+    border-radius: 8px;
+    justify-content: flex-end;
+    width: 170px;
+    padding: 10px;
+    display: flex;
+    position: fixed;
+    inset: 25% -50px auto auto;
+    
+    /* Animation properties */
+    transform-style: preserve-3d;
+    will-change: transform;
+    
+    /* Loop animation */
+    animation: buttonPulse 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+
+  /* Hover pause animation */
+  .from_button:hover {
+    animation-play-state: paused;
+    transform: rotate(90deg) translate3d(0px, -10px, 0px) scale3d(1.05, 1.05, 1);
+  }
+
+  /* Click effect */
+  .from_button:active {
+    animation-play-state: paused;
+    transform: rotate(90deg) translate3d(0px, 0px, 0px) scale3d(0.97, 0.97, 1);
+  }
+
+  /* Focus styles for accessibility */
+  .from_button:focus-visible {
+    outline: 2px solid var(--_primitives---colors--violet-blue);
+    outline-offset: 2px;
+  }
+
+  /* Optional: Add a subtle shadow animation */
+  @keyframes shadowPulse {
+    0% {
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    50% {
+      box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+    }
+    100% {
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+  }
+
+  /* Add shadow animation to button */
+  .from_button {
+    animation: 
+      buttonPulse 2s cubic-bezier(0.4, 0, 0.2, 1) infinite,
+      shadowPulse 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+</style></div><div id="form-modal" class="modal"><div class="modal-content div-block"><div class="modal-form-block w-form"><div id="modal-close-button" class="modal-close-button"><img loading="lazy" src="https://cdn.prod.website-files.com/681b6c6c0a5d7331d78f05dd/68276f4ee23f07c4e6dcd8eb_close-live-chat.svg" alt="" class="close-livechat-icon"/></div><h5 class="form--title">Admissions Open 2026-27.  Enquire Now</h5><form id="Admissions-Enquiry" name="wf-form-Admissions-Enquiry" data-name="Admissions Enquiry" method="get" data-wf-page-id="6865832115216409c8c209cb" data-wf-element-id="1eabe0bb-5580-e199-2825-918d2f3a7bd2"><div class="form_field-wrapper"><label for="Student-Name" class="modal-field-label">Student Name </label><input class="modal-input w-input" maxlength="256" name="Student-Name" data-name="Student Name" placeholder="Student Name " type="text" id="Student-Name" required=""/></div><div class="form_field-wrapper"><label for="Parent-Phone-Number" class="modal-field-label">Parent Phone Number</label><input class="modal-input w-input" maxlength="256" name="Parent-Phone-Number" data-name="Parent Phone Number" placeholder="Parent Phone Number" type="text" id="Parent-Phone-Number" required=""/></div><div class="form_field-wrapper"><label for="Parent-Email-ID" class="modal-field-label">Parent Email ID</label><input class="modal-input w-input" maxlength="256" name="Parent-Email-ID" data-name="Parent Email ID" placeholder="Parent Email ID" type="email" id="Parent-Email-ID" required=""/></div><div class="form_field-wrapper"><label for="Branch" class="modal-field-label">Branch</label><div class="select-container"><select id="Branch" name="Branch" data-name="Branch" required="" class="modal-input custom-select w-select"><option value="">Select one...</option><option value="PCMB ">PCMB </option><option value="PCMC">PCMC</option></select></div></div><div class="form_field-wrapper"><label for="Message" class="modal-field-label">Message</label><textarea required="" placeholder="Message Here..." maxlength="5000" id="Message" name="Message" data-name="Message" class="modal-input w-input"></textarea></div><div class="w-layout-hflex flex-block"><input type="submit" data-wait="Please wait..." class="button modal-submit-button w-button" value="Apply Now"/></div><input class="text-field w-input" maxlength="256" name="page_url" data-name="page_url" placeholder="Example Text" type="text" id="page_url"/></form><div class="w-form-done"><div>Thank you! Your submission has been received!</div></div><div class="w-form-fail"><div>Oops! Something went wrong while submitting the form.</div></div></div></div></div><div class="global-styles"><div class="style-overrides w-embed"><style>
+
+/* Ensure all elements inherit the color from its parent */
+a,
+.w-input,
+.w-select,
+.w-tab-link,
+
+
+.w-dropdown-btn,
+.w-dropdown-toggle,
+.w-slider-arrow-left,
+.w-slider-arrow-right,
+.w-dropdown-link {
+  color: inherit;
+  text-decoration: inherit;
+  font-size: inherit;
+}
+
+/* Focus state style for keyboard navigation for the focusable elements */
+*[tabindex]:focus-visible,
+  input[type="file"]:focus-visible {
+   outline: 0.125rem solid #4d65ff;
+   outline-offset: 0.125rem;
+}
+
+/* Get rid of top margin on first element in any rich text element */
+.w-richtext > :not(div):first-child, .w-richtext > div:first-child > :first-child {
+  margin-top: 0 !important;
+}
+
+/* Get rid of bottom margin on last element in any rich text element */
+.w-richtext>:last-child, .w-richtext ol li:last-child, .w-richtext ul li:last-child {
+	margin-bottom: 0 !important;
+}
+
+/* Prevent all click and hover interaction with an element */
+.pointer-events-off {
+	pointer-events: none;
+}
+
+/* Enables all click and hover interaction with an element */
+.pointer-events-on {
+  pointer-events: auto;
+}
+
+/* Create a class of .div-square which maintains a 1:1 dimension of a div */
+.div-square::after {
+	content: "";
+	display: block;
+	padding-bottom: 100%;
+}
+
+/* Make sure containers never lose their center alignment */
+.container-medium,.container-small, .container-large {
+	margin-right: auto !important;
+  margin-left: auto !important;
+}
+
+
+/* Apply "..." after 3 lines of text */
+.text-style-3lines {
+	display: -webkit-box;
+	overflow: hidden;
+	-webkit-line-clamp: 3;
+	-webkit-box-orient: vertical;
+}
+
+/* Apply "..." after 2 lines of text */
+.text-style-2lines {
+	display: -webkit-box;
+	overflow: hidden;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+}
+
+/* Adds inline flex display */
+.display-inlineflex {
+  display: inline-flex;
+}
+
+/* These classes are never overwritten */
+.hide {
+  display: none !important;
+}
+
+/* Remove default Webflow chevron from form select */
+select{
+  -webkit-appearance:none;
+}
+
+
+@media screen and (max-width: 991px) {
+    .hide, .hide-tablet {
+        display: none !important;
+    }
+}
+  @media screen and (max-width: 767px) {
+    .hide-mobile-landscape{
+      display: none !important;
+    }
+}
+  @media screen and (max-width: 479px) {
+    .hide-mobile{
+      display: none !important;
+    }
+}
+ 
+.margin-0 {
+  margin: 0rem !important;
+}
+  
+.padding-0 {
+  padding: 0rem !important;
+}
+
+.spacing-clean {
+padding: 0rem !important;
+margin: 0rem !important;
+}
+
+.margin-top {
+  margin-right: 0rem !important;
+  margin-bottom: 0rem !important;
+  margin-left: 0rem !important;
+}
+
+.padding-top {
+  padding-right: 0rem !important;
+  padding-bottom: 0rem !important;
+  padding-left: 0rem !important;
+}
+  
+.margin-right {
+  margin-top: 0rem !important;
+  margin-bottom: 0rem !important;
+  margin-left: 0rem !important;
+}
+
+.padding-right {
+  padding-top: 0rem !important;
+  padding-bottom: 0rem !important;
+  padding-left: 0rem !important;
+}
+
+.margin-bottom {
+  margin-top: 0rem !important;
+  margin-right: 0rem !important;
+  margin-left: 0rem !important;
+}
+
+.padding-bottom {
+  padding-top: 0rem !important;
+  padding-right: 0rem !important;
+  padding-left: 0rem !important;
+}
+
+.margin-left {
+  margin-top: 0rem !important;
+  margin-right: 0rem !important;
+  margin-bottom: 0rem !important;
+}
+  
+.padding-left {
+  padding-top: 0rem !important;
+  padding-right: 0rem !important;
+  padding-bottom: 0rem !important;
+}
+  
+.margin-horizontal {
+  margin-top: 0rem !important;
+  margin-bottom: 0rem !important;
+}
+
+.padding-horizontal {
+  padding-top: 0rem !important;
+  padding-bottom: 0rem !important;
+}
+
+.margin-vertical {
+  margin-right: 0rem !important;
+  margin-left: 0rem !important;
+}
+  
+.padding-vertical {
+  padding-right: 0rem !important;
+  padding-left: 0rem !important;
+}
+
+/* Apply "..." at 100% width */
+.truncate-width { 
+		width: 100%; 
+    white-space: nowrap; 
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+}
+/* Removes native scrollbar */
+.no-scrollbar {
+    -ms-overflow-style: none;
+    overflow: -moz-scrollbars-none; 
+}
+
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+.w-nav[data-collapse="all"] .w-nav-menu{
+display:block;
+max-width: 80rem;
+    margin: auto;
+}
+</style></div><div class="color-schemes w-embed"><style>
+/* Color Schemes Controls*/
+<meta name="relume-color-schemes" content="false"/>
+
+  .color-scheme-1 {
+/*All sections should point to Color Scheme 1*/
+
+  }
+
+  .color-scheme-2 {
+    --color-scheme-1--text: var(--color-scheme-2--text);
+    --color-scheme-1--background: var(--color-scheme-2--background);
+    --color-scheme-1--foreground: var(--color-scheme-2--foreground);
+    --color-scheme-1--border: var(--color-scheme-2--border);
+    --color-scheme-1--accent: var(--color-scheme-2--accent);
+  }
+
+  .color-scheme-3 {
+    --color-scheme-1--text: var(--color-scheme-3--text);
+    --color-scheme-1--background: var(--color-scheme-3--background);
+    --color-scheme-1--foreground: var(--color-scheme-3--foreground);
+    --color-scheme-1--border: var(--color-scheme-3--border);
+    --color-scheme-1--accent: var(--color-scheme-3--accent);
+  }
+
+  .color-scheme-4 {
+    --color-scheme-1--text: var(--color-scheme-4--text);
+    --color-scheme-1--background: var(--color-scheme-4--background);
+    --color-scheme-1--foreground: var(--color-scheme-4--foreground);
+    --color-scheme-1--border: var(--color-scheme-4--border);
+    --color-scheme-1--accent: var(--color-scheme-4--accent);
+  }
+
+  .color-scheme-5 {
+    --color-scheme-1--text: var(--color-scheme-5--text);
+    --color-scheme-1--background: var(--color-scheme-5--background);
+    --color-scheme-1--foreground: var(--color-scheme-5--foreground);
+    --color-scheme-1--border: var(--color-scheme-5--border);
+    --color-scheme-1--accent: var(--color-scheme-5--accent);
+  }
+
+  .color-scheme-6 {
+    --color-scheme-1--text: var(--color-scheme-6--text);
+    --color-scheme-1--background: var(--color-scheme-6--background);
+    --color-scheme-1--foreground: var(--color-scheme-6--foreground);
+    --color-scheme-1--border: var(--color-scheme-6--border);
+    --color-scheme-1--accent: var(--color-scheme-6--accent);
+  }
+
+  .color-scheme-7 {
+    --color-scheme-1--text: var(--color-scheme-7--text);
+    --color-scheme-1--background: var(--color-scheme-7--background);
+    --color-scheme-1--foreground: var(--color-scheme-7--foreground);
+    --color-scheme-1--border: var(--color-scheme-7--border);
+    --color-scheme-1--accent: var(--color-scheme-7--accent);
+  }
+
+  .color-scheme-8 {
+    --color-scheme-1--text: var(--color-scheme-8--text);
+    --color-scheme-1--background: var(--color-scheme-8--background);
+    --color-scheme-1--foreground: var(--color-scheme-8--foreground);
+    --color-scheme-1--border: var(--color-scheme-8--border);
+    --color-scheme-1--accent: var(--color-scheme-8--accent);
+  }
+
+  .color-scheme-9 {
+    --color-scheme-1--text: var(--color-scheme-9--text);
+    --color-scheme-1--background: var(--color-scheme-9--background);
+    --color-scheme-1--foreground: var(--color-scheme-9--foreground);
+    --color-scheme-1--border: var(--color-scheme-9--border);
+    --color-scheme-1--accent: var(--color-scheme-9--accent);
+  }
+
+  .color-scheme-10 {
+    --color-scheme-1--text: var(--color-scheme-10--text);
+    --color-scheme-1--background: var(--color-scheme-10--background);
+    --color-scheme-1--foreground: var(--color-scheme-10--foreground);
+    --color-scheme-1--border: var(--color-scheme-10--border);
+    --color-scheme-1--accent: var(--color-scheme-10--accent);
+  }
+  
+/* Inherit slider dot colors */
+.w-slider-dot {
+  background-color: var(--color-scheme-1--text);
+  opacity: 0.20;
+}
+
+.w-slider-dot.w-active {
+  background-color: var(--color-scheme-1--text);
+  opacity: 1;
+}
+
+/* Override .w-slider-nav-invert styles */
+.w-slider-nav-invert .w-slider-dot {
+  background-color: var(--color-scheme-1--text) !important;
+  opacity: 0.20 !important;
+}
+
+.w-slider-nav-invert .w-slider-dot.w-active {
+  background-color: var(--color-scheme-1--text) !important;
+  opacity: 1 !important;
+}
+
+</style></div></div><main class="main-wrapper"><section class="section_header5 text-color-white"><div data-animation="default" class="navbar16_component w-nav" data-easing2="ease" fs-scrolldisable-element="smart-nav" data-easing="ease" data-collapse="all" data-w-id="e3c56176-3eff-167c-39dd-d13db660c90b" role="banner" data-duration="0"><div class="navbar16_container"><a href="index.html" class="navbar16_logo-link w-nav-brand"><img width="326" loading="lazy" alt="" src="https://cdn.prod.website-files.com/681b6c6c0a5d7331d78f05dd/686d4d28d33643d7b6c752be_main.jpg" sizes="(max-width: 479px) 96vw, 326px" srcset="https://cdn.prod.website-files.com/681b6c6c0a5d7331d78f05dd/686d4d28d33643d7b6c752be_main-p-500.jpg 500w, https://cdn.prod.website-files.com/681b6c6c0a5d7331d78f05dd/686d4d28d33643d7b6c752be_main.jpg 630w" class="navbar16_logo"/></a><div class="navbar16_wrapper"><a href="transport.html#" class="button-10 is-navbar16-button hide-mobile-landscape hide-mobile-portrait w-button">9035027143</a><nav role="navigation" class="navbar16_menu w-nav-menu"><div class="navbar16_menu-wrapper"><div class="w-layout-grid footer-grid-small padding-large"><div id="w-node-dd372e00-f222-0c63-99f2-03fee62b7c3e-b660c90b" class="column-2x-large"><div class="column-large"><div class="text-size-small text-color-gray-400-copy">About MVK</div><a href="our-legacy.html" class="footer-link w-inline-block"><div class="text-size-small text-weight-semibold">Our Legacy </div></a><a href="our-founder.html" class="footer-link w-inline-block"><div class="text-size-small text-weight-semibold">Our Founder </div></a><a href="our-leadership.html" class="footer-link w-inline-block"><div class="text-size-small text-weight-semibold">Our Leadership</div></a><a href="faculty.html" class="footer-link w-inline-block"><div class="text-size-small text-weight-semibold">Our Faculty</div></a></div></div><div id="w-node-dd372e00-f222-0c63-99f2-03fee62b7c4b-b660c90b" class="column-2x-large"><div class="column-large"><div class="text-size-small text-color-gray-400-copy">Curriculum</div><a href="kindergarten.html" class="footer-link w-inline-block"><div class="text-size-small text-weight-semibold">Kindergarten</div></a><a href="state-board.html" class="footer-link w-inline-block"><div class="text-size-small text-weight-semibold">State Board</div></a><a href="cbse.html" class="footer-link w-inline-block"><div class="text-size-small text-weight-semibold">CBSE School</div></a><a href="kvr-maruthi-pu-college.html" class="footer-link w-inline-block"><div class="text-size-small text-weight-semibold">PU College</div></a></div></div><div class="column-large"><div class="text-size-small text-color-gray-400-copy">Life at MVK</div><a href="admissions-cbse.html" class="footer-link w-inline-block"><div class="text-size-small text-weight-semibold">Admissions</div></a><a href="events-cbse.html" class="footer-link w-inline-block"><div class="text-size-small text-weight-semibold">Events</div></a><a href="transport.html" aria-current="page" class="footer-link w-inline-block w--current"><div class="text-size-small text-weight-semibold">Transport</div></a><a href="beyond-academics.html" class="footer-link w-inline-block"><div class="text-size-small text-weight-semibold">Beyond Academics</div></a></div><div class="column-large"><div class="text-size-small text-color-gray-400-copy">Social</div><div class="row-regular"><a href="https://www.instagram.com/maruthividyakendra.stateboard/" target="_blank" class="footer-social-link-2 w-inline-block"><div class="icon-regular w-embed"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M13.0271 2.00098C14.1525 2.00284 14.7228 2.00879 15.2156 2.02346L15.4097 2.02981C15.6339 2.03778 15.8551 2.04778 16.1218 2.06028C17.1859 2.10944 17.9118 2.27778 18.5493 2.52528C19.2084 2.77944 19.7651 3.12278 20.3209 3.67861C20.8759 4.23444 21.2193 4.79278 21.4743 5.45028C21.7209 6.08694 21.8893 6.81361 21.9393 7.87778C21.9512 8.14444 21.9608 8.36564 21.9687 8.58989L21.975 8.78397C21.9896 9.27672 21.9963 9.8471 21.9984 10.9725L21.9992 11.7182C21.9993 11.8093 21.9993 11.9033 21.9993 12.0003L21.9992 12.2824L21.9986 13.0281C21.9967 14.1535 21.9908 14.7238 21.9761 15.2166L21.9697 15.4107C21.9618 15.6349 21.9518 15.8561 21.9393 16.1228C21.8901 17.1869 21.7209 17.9128 21.4743 18.5503C21.2201 19.2094 20.8759 19.7661 20.3209 20.3219C19.7651 20.8769 19.2059 21.2203 18.5493 21.4753C17.9118 21.7219 17.1859 21.8903 16.1218 21.9403C15.8551 21.9522 15.6339 21.9618 15.4097 21.9697L15.2156 21.976C14.7228 21.9906 14.1525 21.9973 13.0271 21.9994L12.2814 22.0002C12.1903 22.0003 12.0963 22.0003 11.9993 22.0003L11.7172 22.0002L10.9715 21.9996C9.84612 21.9977 9.27574 21.9918 8.78299 21.9771L8.58891 21.9707C8.36466 21.9628 8.14346 21.9528 7.8768 21.9403C6.81263 21.8911 6.08763 21.7219 5.4493 21.4753C4.79096 21.2211 4.23346 20.8769 3.67763 20.3219C3.1218 19.7661 2.7793 19.2069 2.5243 18.5503C2.2768 17.9128 2.1093 17.1869 2.0593 16.1228C2.04742 15.8561 2.03773 15.6349 2.02988 15.4107L2.02359 15.2166C2.00896 14.7238 2.00229 14.1535 2.00013 13.0281L2 10.9725C2.00186 9.8471 2.00781 9.27672 2.02248 8.78397L2.02883 8.58989C2.0368 8.36564 2.0468 8.14444 2.0593 7.87778C2.10846 6.81278 2.2768 6.08778 2.5243 5.45028C2.77846 4.79194 3.1218 4.23444 3.67763 3.67861C4.23346 3.12278 4.7918 2.78028 5.4493 2.52528C6.0868 2.27778 6.8118 2.11028 7.8768 2.06028C8.14346 2.0484 8.36466 2.03871 8.58891 2.03086L8.78299 2.02457C9.27574 2.00994 9.84612 2.00327 10.9715 2.00111L13.0271 2.00098ZM11.9993 7.00028C9.2364 7.00028 6.9993 9.23981 6.9993 12.0003C6.9993 14.7632 9.23883 17.0003 11.9993 17.0003C14.7622 17.0003 16.9993 14.7607 16.9993 12.0003C16.9993 9.23738 14.7597 7.00028 11.9993 7.00028ZM11.9993 9.00028C13.6562 9.00028 14.9993 10.3429 14.9993 12.0003C14.9993 13.6572 13.6566 15.0003 11.9993 15.0003C10.3424 15.0003 8.9993 13.6576 8.9993 12.0003C8.9993 10.3434 10.3419 9.00028 11.9993 9.00028ZM17.2493 5.50028C16.56 5.50028 15.9993 6.06018 15.9993 6.74943C15.9993 7.43867 16.5592 7.99944 17.2493 7.99944C17.9385 7.99944 18.4993 7.43954 18.4993 6.74943C18.4993 6.06018 17.9376 5.49941 17.2493 5.50028Z" fill="currentColor"/>
+</svg></div></a><a href="https://www.youtube.com/@MaruthividyakendraSSpuram" target="_blank" class="footer-social-link-2 w-inline-block"><div class="icon-regular w-embed"><svg width="32px" height="32px" viewBox="0 0 32 32" id="icon" xmlns="http://www.w3.org/2000/svg"><defs><style>.cls-1{fill:none;}</style></defs><title>logo--youtube</title><path d="M29.41,9.26a3.5,3.5,0,0,0-2.47-2.47C24.76,6.2,16,6.2,16,6.2s-8.76,0-10.94.59A3.5,3.5,0,0,0,2.59,9.26,36.13,36.13,0,0,0,2,16a36.13,36.13,0,0,0,.59,6.74,3.5,3.5,0,0,0,2.47,2.47C7.24,25.8,16,25.8,16,25.8s8.76,0,10.94-.59a3.5,3.5,0,0,0,2.47-2.47A36.13,36.13,0,0,0,30,16,36.13,36.13,0,0,0,29.41,9.26ZM13.2,20.2V11.8L20.47,16Z"/><rect id="_Transparent_Rectangle_" data-name="&lt;Transparent Rectangle&gt;" class="cls-1" width="32" height="32"/></svg></div></a><a href="https://www.facebook.com/p/Maruthi-Vidya-Kendra-State-Board-100067433209895/" target="_blank" class="footer-social-link-2 w-inline-block"><div class="icon-regular w-embed"><svg fill="#000000" width="24px" height="24px" viewBox="0 0 24 24" id="facebook" data-name="Flat Color" xmlns="http://www.w3.org/2000/svg" class="icon flat-color"><path id="primary" d="M14,6h3a1,1,0,0,0,1-1V3a1,1,0,0,0-1-1H14A5,5,0,0,0,9,7v3H7a1,1,0,0,0-1,1v2a1,1,0,0,0,1,1H9v7a1,1,0,0,0,1,1h2a1,1,0,0,0,1-1V14h2.22a1,1,0,0,0,1-.76l.5-2a1,1,0,0,0-1-1.24H13V7A1,1,0,0,1,14,6Z" style="fill: rgb(0, 0, 0);"></path></svg></div></a></div></div></div></div></nav><div class="navbar16_menu-button w-nav-button"><div class="menu-icon4"><div class="menu-icon4_wrapper"><div class="menu-icon4_line-top"></div><div class="menu-icon4_line-middle"><div class="menu-icon4_line-middle-top"></div><div class="menu-icon4_line-middle-base"></div></div><div class="menu-icon4_line-bottom"></div></div></div></div></div></div></div><div data-w-id="1eabe0bb-5580-e199-2825-918d2f3a7c44" class="padding-global"><div data-w-id="1eabe0bb-5580-e199-2825-918d2f3a7c45" class="from_button"><div class="text-block-4">Admissions Open 2026-27</div></div><div class="container-large"><div class="header5_content"><div class="max-width-large"><div class="margin-bottom margin-small"><h1 class="heading-style-h1 small-width">Safe, Reliable Transport for Every Student</h1></div><p class="text-size-small">MVK provides a well-managed, safe, and efficient transport system to ensure that students from across Tumkur and nearby areas can travel to and from school comfortably and securely.<br/>Our fleet of school buses is operated and maintained by trained staff, with strict safety protocols in place at every step of the journey. Each bus is regularly inspected and equipped with modern safety features, giving parents full peace of mind.<br/></p><div class="margin-top margin-medium hide"><div class="button-group"><a href="transport.html#" class="button is-alternate w-button">Admissions Open for 2025-26</a></div></div></div></div><div class="hero_logos"><div class="whatsapp-block"><div class="whatsapp-chat"><div class="top-section"><img loading="lazy" src="https://cdn.prod.website-files.com/681b6c6c0a5d7331d78f05dd/682708b371f74186d015214a_LOGO_MVK.jpg" alt="" class="live-icon-chat"/><div class="top-text-container text-color-black"><div class="live-chat-top-text">Customer Care Team</div><div class="live-chat-bottom-text">Typically replies in a few hours</div></div><div id="close-chat" data-w-id="b6eb409b-78da-6851-46cf-ed5899b658f6" class="close-live-chat-container"><img id="close-chat" loading="lazy" alt="" src="https://cdn.prod.website-files.com/681b6c6c0a5d7331d78f05dd/68276f4ee23f07c4e6dcd8eb_close-live-chat.svg" class="close-livechat-icon"/></div></div><div class="chat-section"><div class="chat-block"><div class="live-chat-top-text block">Customer Care Team</div><div class="live-chat-bottom-text block">Hi there<br/>How can i help you today?</div></div></div><a href="https://wa.me/+919035027143" target="_blank" class="live-chat-link w-inline-block"><div class="livechat-button"><img loading="lazy" src="https://cdn.prod.website-files.com/681b6c6c0a5d7331d78f05dd/68276f4ee23f07c4e6dcd8ea_small-whatsapp.svg" alt="" class="small-whatsapp-icon"/><div class="live-chat-text">Start Whatsapp Chat</div></div></a></div><div id="whatsapp-button" data-w-id="b6eb409b-78da-6851-46cf-ed5899b65905" class="whatsapp-container"><div class="hero_social-logo w-embed"><svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none">
+  <g clip-path="url(#clip0_95_6570)">
+    <path d="M24.006 0H23.994C10.761 0 0 10.764 0 24C0 29.25 1.692 34.116 4.569 38.067L1.578 46.983L10.803 44.034C14.598 46.548 19.125 48 24.006 48C37.239 48 48 37.233 48 24C48 10.767 37.239 0 24.006 0Z" fill="#39A93D"/>
+    <path d="M37.9697 33.8906C37.3907 35.5256 35.0927 36.8816 33.2597 37.2776C32.0057 37.5446 30.3677 37.7576 24.8537 35.4716C17.8007 32.5496 13.2587 25.3826 12.9047 24.9176C12.5657 24.4526 10.0547 21.1226 10.0547 17.6786C10.0547 14.2346 11.8037 12.5576 12.5087 11.8376C13.0877 11.2466 14.0447 10.9766 14.9627 10.9766C15.2597 10.9766 15.5267 10.9916 15.7667 11.0036C16.4717 11.0336 16.8257 11.0756 17.2907 12.1886C17.8697 13.5836 19.2797 17.0276 19.4477 17.3816C19.6187 17.7356 19.7897 18.2156 19.5497 18.6806C19.3247 19.1606 19.1267 19.3736 18.7727 19.7816C18.4187 20.1896 18.0827 20.5016 17.7287 20.9396C17.4047 21.3206 17.0387 21.7286 17.4467 22.4336C17.8547 23.1236 19.2647 25.4246 21.3407 27.2726C24.0197 29.6576 26.1917 30.4196 26.9687 30.7436C27.5477 30.9836 28.2377 30.9266 28.6607 30.4766C29.1977 29.8976 29.8607 28.9376 30.5357 27.9926C31.0157 27.3146 31.6217 27.2306 32.2577 27.4706C32.9057 27.6956 36.3347 29.3906 37.0397 29.7416C37.7447 30.0956 38.2097 30.2636 38.3807 30.5606C38.5487 30.8576 38.5487 32.2526 37.9697 33.8906Z" fill="white"/>
+  </g>
+  <defs>
+    <clipPath id="clip0_95_6570">
+      <rect width="48" height="48" fill="white"/>
+    </clipPath>
+  </defs>
+</svg></div></div><div class="code-embed w-embed w-script"><!-- Flowbase Booster [Tab Rotation] -->
+<script src="https://cdn.jsdelivr.net/npm/@flowbase-co/boosters-tab-rotation-webflow@1.2.0/dist/tab-rotation.min.js" type="text/javascript" integrity="sha384-dV839cpQKobhn/9mz/nxayksjDmSGN5bTAj3lTaSbuA/Zj446VEWIpWwK6vWD9Sn" crossorigin="anonymous"></script></div></div><div class="whatsapp-block"><div class="whatsapp-chat"><div class="top-section"><img loading="lazy" src="https://cdn.prod.website-files.com/681b6c6c0a5d7331d78f05dd/682708b371f74186d015214a_LOGO_MVK.jpg" alt="" class="live-icon-chat"/><div class="top-text-container text-color-black"><div class="live-chat-top-text">Customer Care Team</div><div class="live-chat-bottom-text">Typically replies in a few hours</div></div><div id="close-chat" data-w-id="b6eb409b-78da-6851-46cf-ed5899b658f6" class="close-live-chat-container"><img id="close-chat" loading="lazy" alt="" src="https://cdn.prod.website-files.com/681b6c6c0a5d7331d78f05dd/68276f4ee23f07c4e6dcd8eb_close-live-chat.svg" class="close-livechat-icon"/></div></div><div class="chat-section"><div class="chat-block"><div class="live-chat-top-text block">Customer Care Team</div><div class="live-chat-bottom-text block">Hi there<br/>How can i help you today?</div></div></div><a href="https://wa.me/+919035027143" target="_blank" class="live-chat-link w-inline-block"><div class="livechat-button"><img loading="lazy" src="https://cdn.prod.website-files.com/681b6c6c0a5d7331d78f05dd/68276f4ee23f07c4e6dcd8ea_small-whatsapp.svg" alt="" class="small-whatsapp-icon"/><div class="live-chat-text">Start Whatsapp Chat</div></div></a></div><div id="whatsapp-button" data-w-id="b6eb409b-78da-6851-46cf-ed5899b65905" class="whatsapp-container"><div class="hero_social-logo w-embed"><svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none">
+  <g clip-path="url(#clip0_95_6570)">
+    <path d="M24.006 0H23.994C10.761 0 0 10.764 0 24C0 29.25 1.692 34.116 4.569 38.067L1.578 46.983L10.803 44.034C14.598 46.548 19.125 48 24.006 48C37.239 48 48 37.233 48 24C48 10.767 37.239 0 24.006 0Z" fill="#39A93D"/>
+    <path d="M37.9697 33.8906C37.3907 35.5256 35.0927 36.8816 33.2597 37.2776C32.0057 37.5446 30.3677 37.7576 24.8537 35.4716C17.8007 32.5496 13.2587 25.3826 12.9047 24.9176C12.5657 24.4526 10.0547 21.1226 10.0547 17.6786C10.0547 14.2346 11.8037 12.5576 12.5087 11.8376C13.0877 11.2466 14.0447 10.9766 14.9627 10.9766C15.2597 10.9766 15.5267 10.9916 15.7667 11.0036C16.4717 11.0336 16.8257 11.0756 17.2907 12.1886C17.8697 13.5836 19.2797 17.0276 19.4477 17.3816C19.6187 17.7356 19.7897 18.2156 19.5497 18.6806C19.3247 19.1606 19.1267 19.3736 18.7727 19.7816C18.4187 20.1896 18.0827 20.5016 17.7287 20.9396C17.4047 21.3206 17.0387 21.7286 17.4467 22.4336C17.8547 23.1236 19.2647 25.4246 21.3407 27.2726C24.0197 29.6576 26.1917 30.4196 26.9687 30.7436C27.5477 30.9836 28.2377 30.9266 28.6607 30.4766C29.1977 29.8976 29.8607 28.9376 30.5357 27.9926C31.0157 27.3146 31.6217 27.2306 32.2577 27.4706C32.9057 27.6956 36.3347 29.3906 37.0397 29.7416C37.7447 30.0956 38.2097 30.2636 38.3807 30.5606C38.5487 30.8576 38.5487 32.2526 37.9697 33.8906Z" fill="white"/>
+  </g>
+  <defs>
+    <clipPath id="clip0_95_6570">
+      <rect width="48" height="48" fill="white"/>
+    </clipPath>
+  </defs>
+</svg></div></div><div class="code-embed w-embed w-script"><!-- Flowbase Booster [Tab Rotation] -->
+<script src="https://cdn.jsdelivr.net/npm/@flowbase-co/boosters-tab-rotation-webflow@1.2.0/dist/tab-rotation.min.js" type="text/javascript" integrity="sha384-dV839cpQKobhn/9mz/nxayksjDmSGN5bTAj3lTaSbuA/Zj446VEWIpWwK6vWD9Sn" crossorigin="anonymous"></script></div></div></div></div></div><div class="header5_background-image-wrapper"><div class="image-overlay-layer"></div><img sizes="(max-width: 1280px) 100vw, 1280px" srcset="https://cdn.prod.website-files.com/681b6c6c0a5d7331d78f05dd/6870c29557d4fa33fb279d99_School%20Bus-p-500.png 500w, https://cdn.prod.website-files.com/681b6c6c0a5d7331d78f05dd/6870c29557d4fa33fb279d99_School%20Bus-p-800.png 800w, https://cdn.prod.website-files.com/681b6c6c0a5d7331d78f05dd/6870c29557d4fa33fb279d99_School%20Bus-p-1080.png 1080w, https://cdn.prod.website-files.com/681b6c6c0a5d7331d78f05dd/6870c29557d4fa33fb279d99_School%20Bus.png 1280w" alt="" src="https://cdn.prod.website-files.com/681b6c6c0a5d7331d78f05dd/6870c29557d4fa33fb279d99_School%20Bus.png" loading="eager" class="header5_background-image"/></div></section><section class="section_layout3"><div class="padding-global"><div class="container-large"><div class="padding-section-large"><div class="layout3_component"><div class="w-layout-grid layout3_content"><div id="w-node-_1eabe0bb-5580-e199-2825-918d2f3a7ce7-c8c209cb" class="layout3_image-wrapper"><img sizes="(max-width: 1919px) 100vw, 1920px" srcset="https://cdn.prod.website-files.com/681b6c6c0a5d7331d78f05dd/6870cb3d8ad3cc37e3ce8c6d_School%20bus%202-p-500.png 500w, https://cdn.prod.website-files.com/681b6c6c0a5d7331d78f05dd/6870cb3d8ad3cc37e3ce8c6d_School%20bus%202-p-800.png 800w, https://cdn.prod.website-files.com/681b6c6c0a5d7331d78f05dd/6870cb3d8ad3cc37e3ce8c6d_School%20bus%202-p-1080.png 1080w, https://cdn.prod.website-files.com/681b6c6c0a5d7331d78f05dd/6870cb3d8ad3cc37e3ce8c6d_School%20bus%202-p-1600.png 1600w, https://cdn.prod.website-files.com/681b6c6c0a5d7331d78f05dd/6870cb3d8ad3cc37e3ce8c6d_School%20bus%202.png 1920w" alt="" src="https://cdn.prod.website-files.com/681b6c6c0a5d7331d78f05dd/6870cb3d8ad3cc37e3ce8c6d_School%20bus%202.png" loading="lazy" class="layout3_image"/></div><div class="layout3_content-left"><div class="margin-bottom margin-small"><h2 class="heading-style-h3">Key Safety Features Included</h2></div><p class="text-size-small">Bus routes are reviewed and optimized regularly to minimize travel time and ensure safe, efficient access across Tumkur and surrounding areas.<br/>‍</p><div class="arrow-list"><div class="list"><div class="list-cntent"><img src="https://cdn.prod.website-files.com/681b6c6c0a5d7331d78f05dd/6863fde25c97284e6ded4467_Frame.svg" loading="lazy" width="40" height="40" alt="" class="arrow-right"/><div class="list-text"><div class="list-text-content">Well-maintained buses with routine checks and servicing.</div></div></div></div><div class="column-2"><div class="list-cntent"><img src="https://cdn.prod.website-files.com/681b6c6c0a5d7331d78f05dd/6863fde25c97284e6ded4467_Frame.svg" loading="lazy" width="40" height="40" alt="" class="arrow-right"/><div class="list-text"><div class="list-text-content">Trained drivers experienced in transporting children safely.</div></div></div></div><div class="column-3"><div class="list-cntent"><img src="https://cdn.prod.website-files.com/681b6c6c0a5d7331d78f05dd/6863fde25c97284e6ded4467_Frame.svg" loading="lazy" width="40" height="40" alt="" class="arrow-right"/><div class="list-text"><div class="list-text-content">Support staff (teachers or attendants) present on every bus to support and supervise younger students.</div></div></div></div><div class="column-3"><div class="list-cntent"><img src="https://cdn.prod.website-files.com/681b6c6c0a5d7331d78f05dd/6863fde25c97284e6ded4467_Frame.svg" loading="lazy" width="40" height="40" alt="" class="arrow-right"/><div class="list-text"><div class="list-text-content">First-aid kits available on all buses.</div></div></div></div><div class="column-3"><div class="list-cntent"><img src="https://cdn.prod.website-files.com/681b6c6c0a5d7331d78f05dd/6863fde25c97284e6ded4467_Frame.svg" loading="lazy" width="40" height="40" alt="" class="arrow-right"/><div class="list-text"><div class="list-text-content">Speed governors to ensure safe driving speeds.</div></div></div></div></div></div></div></div></div></div></div></section><section class="section_layout392 curriculum transport"><div class="padding-global"><div class="container-large"></div></div></section><section class="section_cta1"><div class="padding-global"><div class="container-large"><div class="padding-section-custom"><div class="cta1_component"><div class="w-layout-grid cta1_content"><div class="cta1_content-left"><div class="margin-bottom margin-small"><h3 class="heading-style-h3">Ready to Shape Your Future?</h3></div><p>A thoughtfully built academic ecosystem where students can complete their education right from their foundation years through to their seconday education. </p><h3 class="heading-style-h3"><em></em></h3><div class="margin-top margin-medium"><div class="button-group"><a data-w-id="f316665b-e7b4-a22a-9b0e-1e82c4eaa7f1" href="transport.html#" class="button text-weight-semibold w-button">Apply Now</a></div></div></div><div class="cta1_image-wrapper"><img sizes="(max-width: 1280px) 100vw, 1280px" srcset="https://cdn.prod.website-files.com/681b6c6c0a5d7331d78f05dd/6826f5005f90271a444213cc_Screenshot%202025-05-12%20at%209.40.28%E2%80%AFPM-p-500.png 500w, https://cdn.prod.website-files.com/681b6c6c0a5d7331d78f05dd/6826f5005f90271a444213cc_Screenshot%202025-05-12%20at%209.40.28%E2%80%AFPM-p-800.png 800w, https://cdn.prod.website-files.com/681b6c6c0a5d7331d78f05dd/6826f5005f90271a444213cc_Screenshot%202025-05-12%20at%209.40.28%E2%80%AFPM-p-1080.png 1080w, https://cdn.prod.website-files.com/681b6c6c0a5d7331d78f05dd/6826f5005f90271a444213cc_Screenshot%202025-05-12%20at%209.40.28%E2%80%AFPM.png 1280w" alt="" src="https://cdn.prod.website-files.com/681b6c6c0a5d7331d78f05dd/6826f5005f90271a444213cc_Screenshot%202025-05-12%20at%209.40.28%E2%80%AFPM.png" loading="lazy" class="cta1_image"/></div></div></div></div></div></div></section><section class="section-regular footer"><div class="footer"><div class="container-large"><div class="w-layout-grid footer-grid-small padding-large"><div class="column-large"><div class="text-size-small text-color-gray-400-copy">About</div><a href="our-legacy.html" class="footer-link w-inline-block"><div class="text-size-small text-weight-semibold">Our Legacy </div></a><a href="our-founder.html" class="footer-link w-inline-block"><div class="text-size-small text-weight-semibold">Our Founder</div></a><a href="our-leadership.html" class="footer-link w-inline-block"><div class="text-size-small text-weight-semibold">Our Leadership </div></a><a href="faculty.html" class="footer-link w-inline-block"><div class="text-size-small text-weight-semibold">Our Faculty</div></a></div><div class="column-large"><div class="text-size-small text-color-gray-400-copy">Curriculum</div><a href="kindergarten.html" class="footer-link w-inline-block"><div class="text-size-small text-weight-semibold">Kindergarten</div></a><a href="state-board.html" class="footer-link w-inline-block"><div class="text-size-small text-weight-semibold">State Board</div></a><a href="cbse.html" class="footer-link w-inline-block"><div class="text-size-small text-weight-semibold">CBSE School</div></a><a href="kvr-maruthi-pu-college.html" class="footer-link w-inline-block"><div class="text-size-small text-weight-semibold">PU College</div></a></div><div class="column-large"><div class="text-size-small text-color-gray-400-copy">Life at MVK</div><a href="admissions.html" class="footer-link w-inline-block"><div class="text-size-small text-weight-semibold">Admissions</div></a><a href="transport.html" aria-current="page" class="footer-link w-inline-block w--current"><div class="text-size-small text-weight-semibold">Transport</div></a><a href="events-cbse.html" class="footer-link w-inline-block"><div class="text-size-small text-weight-semibold">Events</div></a><a href="beyond-academics.html" class="footer-link w-inline-block"><div class="text-size-small text-weight-semibold">Beyond Academics</div></a></div></div><div class="w-layout-grid grid-two-column"><div class="footer-column"><div class="row-2x-large"><a href="kvr-maruthi-pu-college.html" class="footer-brand w-inline-block"><img src="https://cdn.prod.website-files.com/681b6c6c0a5d7331d78f05dd/687144e0bf106e924012c931_main.png" loading="lazy" width="347" alt=""/></a></div></div><div class="column-large"><div class="text-size-small text-color-gray-400-copy">Social</div><div class="row-regular"><a href="https://www.instagram.com/maruthividyakendra.stateboard/" target="_blank" class="footer-social-link w-inline-block"><div class="icon-regular w-embed"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M13.0271 2.00098C14.1525 2.00284 14.7228 2.00879 15.2156 2.02346L15.4097 2.02981C15.6339 2.03778 15.8551 2.04778 16.1218 2.06028C17.1859 2.10944 17.9118 2.27778 18.5493 2.52528C19.2084 2.77944 19.7651 3.12278 20.3209 3.67861C20.8759 4.23444 21.2193 4.79278 21.4743 5.45028C21.7209 6.08694 21.8893 6.81361 21.9393 7.87778C21.9512 8.14444 21.9608 8.36564 21.9687 8.58989L21.975 8.78397C21.9896 9.27672 21.9963 9.8471 21.9984 10.9725L21.9992 11.7182C21.9993 11.8093 21.9993 11.9033 21.9993 12.0003L21.9992 12.2824L21.9986 13.0281C21.9967 14.1535 21.9908 14.7238 21.9761 15.2166L21.9697 15.4107C21.9618 15.6349 21.9518 15.8561 21.9393 16.1228C21.8901 17.1869 21.7209 17.9128 21.4743 18.5503C21.2201 19.2094 20.8759 19.7661 20.3209 20.3219C19.7651 20.8769 19.2059 21.2203 18.5493 21.4753C17.9118 21.7219 17.1859 21.8903 16.1218 21.9403C15.8551 21.9522 15.6339 21.9618 15.4097 21.9697L15.2156 21.976C14.7228 21.9906 14.1525 21.9973 13.0271 21.9994L12.2814 22.0002C12.1903 22.0003 12.0963 22.0003 11.9993 22.0003L11.7172 22.0002L10.9715 21.9996C9.84612 21.9977 9.27574 21.9918 8.78299 21.9771L8.58891 21.9707C8.36466 21.9628 8.14346 21.9528 7.8768 21.9403C6.81263 21.8911 6.08763 21.7219 5.4493 21.4753C4.79096 21.2211 4.23346 20.8769 3.67763 20.3219C3.1218 19.7661 2.7793 19.2069 2.5243 18.5503C2.2768 17.9128 2.1093 17.1869 2.0593 16.1228C2.04742 15.8561 2.03773 15.6349 2.02988 15.4107L2.02359 15.2166C2.00896 14.7238 2.00229 14.1535 2.00013 13.0281L2 10.9725C2.00186 9.8471 2.00781 9.27672 2.02248 8.78397L2.02883 8.58989C2.0368 8.36564 2.0468 8.14444 2.0593 7.87778C2.10846 6.81278 2.2768 6.08778 2.5243 5.45028C2.77846 4.79194 3.1218 4.23444 3.67763 3.67861C4.23346 3.12278 4.7918 2.78028 5.4493 2.52528C6.0868 2.27778 6.8118 2.11028 7.8768 2.06028C8.14346 2.0484 8.36466 2.03871 8.58891 2.03086L8.78299 2.02457C9.27574 2.00994 9.84612 2.00327 10.9715 2.00111L13.0271 2.00098ZM11.9993 7.00028C9.2364 7.00028 6.9993 9.23981 6.9993 12.0003C6.9993 14.7632 9.23883 17.0003 11.9993 17.0003C14.7622 17.0003 16.9993 14.7607 16.9993 12.0003C16.9993 9.23738 14.7597 7.00028 11.9993 7.00028ZM11.9993 9.00028C13.6562 9.00028 14.9993 10.3429 14.9993 12.0003C14.9993 13.6572 13.6566 15.0003 11.9993 15.0003C10.3424 15.0003 8.9993 13.6576 8.9993 12.0003C8.9993 10.3434 10.3419 9.00028 11.9993 9.00028ZM17.2493 5.50028C16.56 5.50028 15.9993 6.06018 15.9993 6.74943C15.9993 7.43867 16.5592 7.99944 17.2493 7.99944C17.9385 7.99944 18.4993 7.43954 18.4993 6.74943C18.4993 6.06018 17.9376 5.49941 17.2493 5.50028Z" fill="currentColor"/>
+</svg></div></a><a href="https://www.youtube.com/@MaruthividyakendraSSpuram" target="_blank" class="footer-social-link w-inline-block"><div class="icon-regular w-embed"><svg width="32px" height="32px" viewBox="0 0 32 32" id="icon" xmlns="http://www.w3.org/2000/svg"><defs><style>.cls-1{fill:none;}</style></defs><title>logo--youtube</title><path d="M29.41,9.26a3.5,3.5,0,0,0-2.47-2.47C24.76,6.2,16,6.2,16,6.2s-8.76,0-10.94.59A3.5,3.5,0,0,0,2.59,9.26,36.13,36.13,0,0,0,2,16a36.13,36.13,0,0,0,.59,6.74,3.5,3.5,0,0,0,2.47,2.47C7.24,25.8,16,25.8,16,25.8s8.76,0,10.94-.59a3.5,3.5,0,0,0,2.47-2.47A36.13,36.13,0,0,0,30,16,36.13,36.13,0,0,0,29.41,9.26ZM13.2,20.2V11.8L20.47,16Z"/><rect id="_Transparent_Rectangle_" data-name="&lt;Transparent Rectangle&gt;" class="cls-1" width="32" height="32"/></svg></div></a><a href="https://www.facebook.com/p/Maruthi-Vidya-Kendra-State-Board-100067433209895/" target="_blank" class="footer-social-link w-inline-block"><div class="icon-regular w-embed"><svg fill="#000000" width="24px" height="24px" viewBox="0 0 24 24" id="facebook" data-name="Flat Color" xmlns="http://www.w3.org/2000/svg" class="icon flat-color"><path id="primary" d="M14,6h3a1,1,0,0,0,1-1V3a1,1,0,0,0-1-1H14A5,5,0,0,0,9,7v3H7a1,1,0,0,0-1,1v2a1,1,0,0,0,1,1H9v7a1,1,0,0,0,1,1h2a1,1,0,0,0,1-1V14h2.22a1,1,0,0,0,1-.76l.5-2a1,1,0,0,0-1-1.24H13V7A1,1,0,0,1,14,6Z" style="fill: rgb(0, 0, 0);"></path></svg></div></a></div></div><p class="paragraph-2-copy"><strong>Belagumba Campus:</strong><br/>‍<br/>Oordigere Road, Belagumba, Tumakuru, Karnataka 572104</p><div class="column-large subscribe"><div class="form-block w-form"><form id="email-form" name="email-form" data-name="Email Form" method="get" class="form-horizontal" data-wf-page-id="6865832115216409c8c209cb" data-wf-element-id="2aeb82ee-edc2-df7f-470c-a702970b13f0"><p class="paragraph-2-copy"><strong>City Campus:</strong><br/>‍<br/>2127, 15th Cross Rd, Someshwara Puram, Tumakuru, Karnataka 572102</p></form><div class="w-form-done"><div>Thank you! Your submission has been received!</div></div><div class="w-form-fail"><div>Oops! Something went wrong while submitting the form.</div></div></div></div><div class="legal-row"><a href="transport.html#" class="legal-link">Terms of use</a><a href="transport.html#" class="legal-link">Users Privacy</a></div></div></div></div></section></main></div><script src="https://d3e54v103j8qbb.cloudfront.net/js/jquery-3.5.1.min.dc5e7f18c8.js?site=681b6c6c0a5d7331d78f05dd" type="text/javascript" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script><script src="https://cdn.prod.website-files.com/681b6c6c0a5d7331d78f05dd/js/webflow.schunk.36b8fb49256177c8.js" type="text/javascript" integrity="sha384-4abIlA5/v7XaW1HMXKBgnUuhnjBYJ/Z9C1OSg4OhmVw9O3QeHJ/qJqFBERCDPv7G" crossorigin="anonymous"></script><script src="https://cdn.prod.website-files.com/681b6c6c0a5d7331d78f05dd/js/webflow.schunk.e7056d78d5ccdfba.js" type="text/javascript" integrity="sha384-rq4gPhzO/gny4JlmNYTMVTSULqhNV7JBHg7YMw4lF9An7gw+1ORkJeMqSNu8IOMo" crossorigin="anonymous"></script><script src="https://cdn.prod.website-files.com/681b6c6c0a5d7331d78f05dd/js/webflow.4ead1620.e1cd81eeb05a13ab.js" type="text/javascript" integrity="sha384-NMVlZS6v2NJiaLm8JV5V5G9LAdU1LDtj4V5uSGDSJI/dkGMuVw9uS2PkEwgietAA" crossorigin="anonymous"></script><script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Find your form (update the selector as needed)
+  var form = document.querySelector('form');
+  
+  if (form) {
+    // Create a hidden input
+    var hiddenInput = document.createElement('input');
+    hiddenInput.type = 'hidden';
+    hiddenInput.name = 'page_url';
+    hiddenInput.value = window.location.href;
+    
+    // Append it to the form
+    form.appendChild(hiddenInput);
+  }
+});
+</script></body></html>
