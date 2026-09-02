@@ -36,7 +36,7 @@ function sanitizeRow(row: number[]): number[] {
   return row.map((v) => (Math.abs(v) < DENOISE_FLOOR ? 0 : v));
 }
 
-export async function embed(text: string): Promise<number[][]> {
+export async function embed(text: string): Promise<number[]> {
   const extractor = await getTransformerEmbedder();
   // mean pooling only; we sanitize + normalize ourselves to kill denormals.
   const options = {
@@ -53,7 +53,7 @@ export async function embed(text: string): Promise<number[][]> {
   if (norm > 0) {
     embedding[0].forEach((v, i) => (embedding[0][i] = v / norm));
   }
-  return embedding;
+  return embedding[0] ?? [];
 }
 
 export async function embedDocument(source: string, content: string) {

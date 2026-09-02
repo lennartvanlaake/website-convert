@@ -9,7 +9,6 @@ import {
 import { embed } from "./embed";
 import { EMBEDDING_DIMENSIONS } from "./constants";
 
-
 // ponytail: :memory: so we never touch ../db.sqlite in normal runs, and each
 // describe gets a fresh in-memory DB. We rely on the real embed pipeline here
 // (not hand-built vectors) so the test checks *meaning* similarity end to end.
@@ -44,7 +43,7 @@ describe("search", () => {
       const docId = insertDoc(c.source, "h" + c.source, "md", "prose");
       const id = insertDocChunk(docId, c.content);
       const emb = await embed(c.content);
-      expect(emb[0].length).toBe(EMBEDDING_DIMENSIONS);
+      expect(emb.length).toBe(EMBEDDING_DIMENSIONS);
       insertDocVector(id, emb);
     }
   });
