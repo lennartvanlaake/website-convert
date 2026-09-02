@@ -80,7 +80,7 @@ describe("setup DB", () => {
     const res = await dbSearch([qX], 10);
     expect(res.length).toBe(2);
     const dist = res.map((r) => r.distance);
-    expect(dist[0]).toBeLessThanOrEqual(dist[1]);
+    expect(Number(dist[0]!)).toBeLessThanOrEqual(Number(dist[1]!));
     expect((res[0] as { content: string }).content).toContain("coffee");
 
     // dbSearch must not truncate the stored vector to a single float:
@@ -89,9 +89,9 @@ describe("setup DB", () => {
     qY[1] = 1;
     const resY = await dbSearch([qY], 10);
     expect(resY.length).toBe(2);
-    const ydist = resY.map((r) => Number(r.distance));
+    const ydist = resY.map((r) => r.distance);
     // nearY (dim1) must be closest to the +y query
-    expect(ydist[0]).toBeLessThan(ydist[1]);
+    expect(Number(ydist[0]!)).toBeLessThan(Number(ydist[1]!));
   });
 
   test("insertDocVector flattens a single-row matrix embedding", async () => {
@@ -111,7 +111,7 @@ describe("setup DB", () => {
     const buf = Buffer.from(row0);
     const view = new Float32Array(buf);
     view[0] = 1; // align dim 0 only
-    const res = await dbSearch([emb], 10);
+    const res = await dbSearch(emb, 10);
     expect(res.length).toBe(1);
     const dist = Number(res[0]!.distance);
     expect(dist).toBeGreaterThanOrEqual(0);

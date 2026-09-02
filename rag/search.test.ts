@@ -57,9 +57,11 @@ describe("search", () => {
     const query = "A dog is a domestic pet animal kept by people.";
     const res = await searchRag(query, 1);
 
-    expect(res[0].source).toBe("cats");
-    expect(res[0].content).toBe("A cat is a small domestic feline pet animal.");
-    expect(res[0].distance).toBeGreaterThanOrEqual(0);
+    // res is non-empty: the paraphrase must rank-first (guarantees res[0]).
+    expect(res.length).toBe(1);
+    expect(res[0]!.source).toBe("cats");
+    expect(res[0]!.content).toBe("A cat is a small domestic feline pet animal.");
+    expect(res[0]!.distance).toBeGreaterThanOrEqual(0);
   });
 
   test("finds the closest chunk when several topics are present", async () => {

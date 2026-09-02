@@ -111,7 +111,10 @@ export function insertDocChunk(sourceId: number, content: string) {
 // explicitly rather than forcing plain number[].
 export function insertDocVector(
   chunkId: number | bigint,
-  embedding: Float32Array | number[],
+  // Accepts the 1D row (Float32Array or number[]), the [row] wrapper from
+  // generateEmbedding (number[][]), and any nesting — flattenEmbedding reduces
+  // all of them down to the real dim-384 row.
+  embedding: Float32Array | number[] | number[][],
 ) {
   // ponytail: store as binary vec_f32 (official sqlite-vec bun convention),
   // NOT JSON.stringify — vec0 auto-parses TEXT columns as JSON on read and
@@ -130,7 +133,10 @@ export function insertDocVector(
 
 // search rag using an embedded query (vec0 KNN + JOIN back for text)
 export function dbSearch(
-  embeddedQuery: Float32Array | number[],
+  // Accepts the 1D query (Float32Array or number[]) or the [row] wrapper from
+  // generateEmbedding (number[][]) — flattenEmbedding reduces all of them to the
+  // real dim-384 row.
+  embeddedQuery: Float32Array | number[] | number[][],
   maxResults: number,
 ): SearchResult[] {
   // KNN clause below needs SQL-level interpolation — vec0 has no query builder and
