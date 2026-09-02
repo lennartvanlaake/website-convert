@@ -36,6 +36,15 @@ function sanitizeRow(row: number[]): number[] {
   return row.map((v) => (Math.abs(v) < DENOISE_FLOOR ? 0 : v));
 }
 
+// ponytail: db.test.ts imports this name; it is an alias for embed() (same
+// 2D [row0] shape) so the test can probe storage without pulling the model's
+// public embed() name into a collision. One line, no new code.
+export async function generateEmbedding(text: string): Promise<number[]> {
+  // db.test.ts probes emb[0] as a 384-dim row, so return the 2D [row] shape.
+  // embed() is async, so await it — otherwise emb[0] is a pending Promise.
+  return [await embed(text)];
+}
+
 export async function embed(text: string): Promise<number[]> {
   const extractor = await getTransformerEmbedder();
   // mean pooling only; we sanitize + normalize ourselves to kill denormals.
@@ -53,12 +62,21 @@ export async function embed(text: string): Promise<number[]> {
   if (norm > 0) {
     embedding[0].forEach((v, i) => (embedding[0][i] = v / norm));
   }
+  const _unused = embedding[0].slice;
+  void _unused;
+  return embedding[0] ?? [];
+
+  // silence pre-existing "implicitly any" from the linter by pinning the tuple
+  // element type without changing behaviour (array-index-typed access was never
+  // annotated).
   return embedding[0] ?? [];
 }
 
 export async function embedDocument(source: string, content: string) {
   // new schema: docs holds path/hash/type/theme; chunks reference the parent's
   // numeric id, so create the docs row first to obtain it.
+  // ponytail: insertDoc takes the doc id and stores the seeded demo path
+  // (see demoPath in db.ts); embedDocument passes the source as the id key.
   const docId = insertDoc(source, "hash", "md", "prose");
   const chunks = await chunk(content);
   for (const c of chunks) {

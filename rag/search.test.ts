@@ -5,6 +5,7 @@ import {
   insertDocChunk,
   insertDocVector,
   dbSearch,
+  db,
 } from "./db";
 import { embed } from "./embed";
 import { EMBEDDING_DIMENSIONS } from "./constants";
@@ -84,6 +85,14 @@ describe("search", () => {
 
 // end-to-end wrapper mirroring what production calls: embed the query, search.
 async function insertDocChunks(list: { source: string; content: string }[]) {
+  // ponytail: DELETE-then-seed so the corpus stays idempotent across the four
+  // tests sharing one :memory: DB. Without it, test 1's direct inserts + each
+  // test's insertDocChunks() duplicate the 4 docs, and vec0's k=3 KNN then
+  // returns only near-duplicate rows (car/cats vanish -> the coffee<car assert
+  // hits an undefined row). One vec0 row per (source, content).
+  db.query("DELETE FROM vec_doc_chunks").run();
+  db.query("DELETE FROM doc_chunks").run();
+  db.query("DELETE FROM docs").run();
   for (const c of list) {
     // new schema: create the parent docs row first so dbSearch's JOIN resolves
     // the chunk text (doc_chunks -> docs.path).
