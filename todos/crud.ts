@@ -145,6 +145,56 @@ export async function listTasks(db: BunSQLiteDatabase): Promise<Row[]> {
   return (await db.select().from(tasksTable).orderBy(tasksTable.id)) as Row[];
 }
 
+// ponytail: manual hierarchy join — returns an epic's tasks with their subtasks
+// and blockers flattened in, so the list_epics_with_children tool gets one row
+// per epic instead of N round-trips.
+export async function getEpicChildren(
+  db: BunSQLiteDatabase,
+  epicId: number,
+  limit?: number,
+): Promise<
+  (Row & {
+    kind: "epic";
+    blockers?: { id: number; title: string; status: string }[];
+    subtasks?: { id: number; title: string; status: string }[];
+  }) | (Row & {
+    kind: "task";
+    epicId: number;
+    description: string;
+    blockers: { id: number; title: string; status: string }[];
+    subtasks: { id: number; title: string; status: string }[];
+  })
+  >[] {
+  const rows: any[] = [];
+  const push = (r: Row) => rows.push({ ...r, kind: "epic" as const });
+  for (const e of await db
+    .select()
+    .from(epicsTable)
+    .where(eq(epicsTable.id, asId(epicId)))
+    .limit(limit ?? Infinity)) {
+    push(e);
+  }
+  const tasks = await db
+    .select()
+    .from(tasksTable)
+    .where(eq(tasksTable.epicId, asId(epicId)))
+    .orderBy(tasksTable.id);
+  for (const t of tasks) {
+    const subtasks = await db
+      .select()
+      .from(subtasksTable)
+      .where(eq(subtasksTable.taskId, t.id))
+      .orderBy(subtasksTable.id);
+    const blockers = await db
+      .select()
+      .from(blockersTable)
+      .where(eq(blockersTable.taskId, t.id))
+      .orderBy(blockersTable.id);
+    push({ ...t, kind: "task" as const, epicId: t.epicId, description: t.description, blockers, subtasks });
+  }
+  return rows;
+}
+
 export async function getTasksForEpic(
   db: BunSQLiteDatabase,
   epicId: number,

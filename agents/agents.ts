@@ -7,7 +7,7 @@ import { mainModel, miniModel } from "../models";
 import { z } from "zod";
 import { createAgent, todoListMiddleware } from "langchain";
 
-const ScoutReportSchema = z.object({
+export const ScoutReportSchema = z.object({
   tldr: z
     .string()
     .describe(
@@ -18,17 +18,26 @@ const ScoutReportSchema = z.object({
 
 type ScoutReportSchemaType = z.infer<typeof ScoutReportSchema>;
 
-const summarizer = createSummarizationMiddleware({ model: miniModel, backend });
+export const ManagerContextSchema = z.object({
+  origin_state_summary: ScoutReportSchema,
+  target_state_summary: ScoutReportSchema,
+  origin_tree: z.any(),
+  target_tree: z.any(),
+});
+
+type ManagerContextSchemaType = z.infer<typeof ManagerContextSchema>;
 
 export async function runDeepAgentScout(
   dir: string,
   task: string,
 ): Promise<ScoutReportSchemaType> {
   const backend = new FilesystemBackend({ rootDir: dir, virtualMode: false });
+
+  // add RAG middleware
   const agent = createAgent({
     model: mainModel,
     middleware: [
-      summarizer,
+      createSummarizationMiddleware({ model: miniModel, backend }),
       todoListMiddleware(),
       createFilesystemMiddleware({
         backend,
@@ -48,4 +57,33 @@ export async function runDeepAgentScout(
   });
 
   return response.structuredResponse;
+}
+
+export async function runManagerAgent(
+  task: string,
+  context: ManagerContextSchemaType,
+) {
+  // add SCRUM-middleware and RAG-middleware
+  const agent = createAgent({
+    model: mainModel,
+    middleware: [],
+    contextSchema: ManagerContextSchema,
+  });
+
+  const response = await agent.invoke(
+    {
+      messages: [
+        {
+          role: "user",
+          content: `${task}`,
+        },
+      ],
+    },
+
+    {
+      context: context,
+    },
+  );
+
+  return;
 }
