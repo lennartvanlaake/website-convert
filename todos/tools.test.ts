@@ -1,5 +1,12 @@
 import { test, expect, describe, beforeAll, afterAll } from "bun:test";
+import { eq } from "drizzle-orm";
 import { setupDatabase } from "../db";
+import {
+  epicsTable,
+  tasksTable,
+  subtasksTable,
+  blockersTable,
+} from "../schema";
 import { z } from "zod";
 import {
   listEpicsWithChildren,
@@ -21,6 +28,8 @@ describe("scrum epic tools", () => {
   let db: ReturnType<typeof setupDatabase>;
 
   beforeAll(() => {
+    // ponytail: :memory: for tests — each describe re-opens a fresh in-memory
+    // DB so every test starts empty, regardless of the tools' ./todos.db file.
     db = setupDatabase(":memory:");
   });
 
@@ -52,7 +61,7 @@ describe("scrum epic tools", () => {
     const fetched = await db
       .select()
       .from(epicsTable)
-      .where(epicsTable.id.eq(epicId));
+      .where(eq(epicsTable.id, epicId));
     expect(fetched[0].status).toBe("in-progress");
 
     // zod enum: an unknown status must be rejected (no silent success).
@@ -114,7 +123,7 @@ describe("scrum task tools", () => {
     const fetched = await db
       .select()
       .from(tasksTable)
-      .where(tasksTable.id.eq(taskId));
+      .where(eq(tasksTable.id, taskId));
     expect(fetched[0].status).toBe("done");
   });
 });
@@ -154,7 +163,7 @@ describe("scrum subtask tools", () => {
     const fetched = await db
       .select()
       .from(subtasksTable)
-      .where(subtasksTable.id.eq(subtaskId));
+      .where(eq(subtasksTable.id, subtaskId));
     expect(fetched[0].status).toBe("done");
   });
 
@@ -197,7 +206,7 @@ describe("scrum blocker tools", () => {
     const fetched = await db
       .select()
       .from(blockersTable)
-      .where(blockersTable.taskId.eq(taskId));
+      .where(eq(blockersTable.taskId, taskId));
     expect(fetched).toHaveLength(1);
     expect(fetched[0].title).toBe("Blocked on design");
   });

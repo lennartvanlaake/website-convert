@@ -1,28 +1,22 @@
-import { tool } from "@langchain/core/tools";
+import { tool, type StructuredTool } from "@langchain/core/tools";
 import { z } from "zod";
-import type { BunSQLiteDatabase } from "drizzle-orm/bun-sqlite";
-import { setupDatabase } from "../db";
+import { db } from "../db";
 import * as crud from "../crud";
 
 // ponytail: structured tools so the schema is exposed to the model (name,
 // description, typed params) — this is what DynamicStructuredTool / tool()
 // build on top of. Zod gives validation + free JSON-schema for the agent.
 
-// ponytail: crud.* take a BunSQLiteDatabase instance; the tools own the single
-// connection (setupDatabase once) so every call hits the same rows.
-
-const db = setupDatabase("./todos.db");
+// ponytail: crud.* take a BunSQLiteDatabase instance; the tools read the
+// shared module-level `db` from ../db (not a captured const). A `let` so tests
+// can re-point it at a fresh :memory: DB via setupDatabase(); production calls
+// setupDatabase("./todos.db") once at startup.
 // typed as the drizzle client shape crud.* expects
 
 // Status vocabulary (Scrum-flavoured). These are the only accepted values; the
 // zod enums below enforce them so the model can't invent statuses.
 const EPIC_STATUSES = ["backlog", "in-progress", "done"] as const;
-const TASK_STATUSES = [
-  "todo",
-  "in-progress",
-  "done",
-  "blocked",
-] as const;
+const TASK_STATUSES = ["todo", "in-progress", "done", "blocked"] as const;
 const SUBTASK_STATUSES = TASK_STATUSES;
 
 // ---- Epic tools -----------------------------------------------------------
@@ -37,48 +31,41 @@ export const listEpicsWithChildren = tool(
         ? await crud.getEpicChildren(db, epicId, limit)
         : await crud.getAllEpics(db);
       const out = rows
-        .map((r: { kind: string; id: number; title: string; status?: string | null; epicId?: number; blockers?: { id: number; title: string; status: string }[]; subtasks?: { id: number; title: string; status: string }[] }) => {
-          const meta =
+        .map((r) => {
+          const taskIds =
             r.kind === "task"
               ? {
-                  status: r.status,
-                  epicId: r.epicId,
-                  title: r.title,
-                  description: r.description,
-                  blockers: r.blockers ?? [],
-                  subtasks: r.subtasks ?? [],
+                  subtaskIds: (r.subtaskIds ?? []).filter((s) => s > 0),
+                  blockerIds: (r.blockerIds ?? []).filter((b) => b > 0),
                 }
-              : { status: r.status, title: r.title, description: r.description };
+              : undefined;
+          const subtasks: { id: number; title: string; status: string }[] = (
+            taskIds?.subtaskIds ?? []
+          ).map((id: number) => ({ id, title: "", status: "" }));
+          const blockers: { id: number; title: string; status: string }[] = (
+            taskIds?.blockerIds ?? []
+          ).map((id: number) => ({ id, title: "", status: "" }));
           return {
             kind: r.kind,
             id: r.id,
             title: r.title,
-            status: meta.status ?? null,
-            ...("epicId" in meta ? { epicId: meta.epicId } : {}),
-            blockers:
-              r.kind === "task" && Array.isArray(meta.blockers)
-                ? meta.blockers.map((b: { id: number; title: string; status: string }) => ({
-                    id: b.id,
-                    title: b.title,
-                    status: b.status,
-                  }))
-                : [],
-            subtasks:
-              r.kind === "task" && Array.isArray(meta.subtasks)
-                ? meta.subtasks.map((s: { id: number; title: string; status: string }) => ({
-                    id: s.id,
-                    title: s.title,
-                    status: s.status,
-                  }))
-                : [],
+            status: r.status ?? null,
+            ...(r.kind === "task" ? { epicId: r.epicId } : {}),
+            blockers,
+            subtasks,
           };
         })
-        .filter((r: { kind: string; id: number; title: string; status?: string | null }) => r !== undefined);
-      return `Epics: ${rows.length}. ${out
-        .map((r) => `${r.kind}#${r.id} ${r.title} [${r.status ?? "—"}]`)
-        .join("; ") || "(none)"}`;
+        .filter((r) => r !== undefined);
+      return `Epics: ${rows.length}. ${
+        out
+          .map((r) => `${r.kind}#${r.id} ${r.title} [${r.status ?? "—"}]`)
+          .join("; ") || "(none)"
+      }`;
     } catch (e) {
-      return `Failed to list: ${(e as Error).message}`;
+      // ponytail: expose the real error, don't hide it behind a generic
+      // string so the caller can see what broke.
+      console.error("list_epics_with_children failed:", e);
+      throw e;
     }
   },
   {
@@ -108,7 +95,8 @@ export const createEpicTool = tool(
       const epic = await crud.createEpic(db, { title, description });
       return `Created epic #${epic.id}: "${epic.title}".`;
     } catch (e) {
-      return `Failed to create epic: ${(e as Error).message}`;
+      // Re-throw so callers/tests see the real error instead of a masked string.
+      throw e;
     }
   },
   {
@@ -117,7 +105,10 @@ export const createEpicTool = tool(
       "Create a new epic (a large initiative spanning multiple sprints). Use when a broad goal needs to be broken down into tasks and subtasks.",
     schema: z.object({
       title: z.string().min(1).describe("Epic title."),
-      description: z.string().min(1).describe("What the epic delivers and why."),
+      description: z
+        .string()
+        .min(1)
+        .describe("What the epic delivers and why."),
     }),
   },
 );
@@ -144,9 +135,9 @@ export const updateEpicStatusTool = tool(
       "Move an epic between Scrum states. Use at sprint boundaries: 'backlog' (not started), 'in-progress' (being worked this sprint), 'done' (complete).",
     schema: z.object({
       epicId: z.number().describe("Epic id to update."),
-      status: z.enum(EPIC_STATUSES).describe(
-        "New status. 'backlog' -> 'in-progress' -> 'done'.",
-      ),
+      status: z
+        .enum(EPIC_STATUSES)
+        .describe("New status. 'backlog' -> 'in-progress' -> 'done'."),
     }),
   },
 );
@@ -179,7 +170,10 @@ export const createTaskTool = tool(
       "Create a task (a user story — sprint-sized work delivering usable value). Requires a valid epicId. Use to slice an epic into deliverable units, then break each into subtasks.",
     schema: z.object({
       title: z.string().min(1).describe("Task title."),
-      description: z.string().min(1).describe("Acceptance-relevant description."),
+      description: z
+        .string()
+        .min(1)
+        .describe("Acceptance-relevant description."),
       epicId: z.number().describe("Id of the epic this task belongs to."),
     }),
   },
@@ -207,9 +201,9 @@ export const updateTaskStatusTool = tool(
       "Move a task (story) between Scrum states. Use during sprint planning/daily scrum: 'todo' (planned, not started), 'in-progress' (being done now), 'blocked' (impediment, use add_blocker), 'done' (meets DoD).",
     schema: z.object({
       taskId: z.number().describe("Task id to update."),
-      status: z.enum(TASK_STATUSES).describe(
-        "New status: 'todo' | 'in-progress' | 'blocked' | 'done'.",
-      ),
+      status: z
+        .enum(TASK_STATUSES)
+        .describe("New status: 'todo' | 'in-progress' | 'blocked' | 'done'."),
     }),
   },
 );
@@ -228,8 +222,13 @@ export const createSubtaskTool = tool(
   }) => {
     try {
       const task = await crud.getTask(db, taskId);
-      if (!task) return `Task #${taskId} does not exist; create it first.`;
-      const subtask = await crud.createSubtask(db, { title, description, taskId });
+      if (!task)
+        throw new Error(`Task #${taskId} does not exist; create it first.`);
+      const subtask = await crud.createSubtask(db, {
+        title,
+        description,
+        taskId,
+      });
       return `Created subtask #${subtask.id}: "${subtask.title}" on task #${subtask.taskId}.`;
     } catch (e) {
       return `Failed to create subtask: ${(e as Error).message}`;
@@ -269,9 +268,9 @@ export const updateSubtaskStatusTool = tool(
       "Mark a subtask's progress. Use to reflect daily work: 'todo' | 'in-progress' | 'done'. All subtasks 'done' is a good signal the parent task is close.",
     schema: z.object({
       subtaskId: z.number().describe("Subtask id to update."),
-      status: z.enum(SUBTASK_STATUSES).describe(
-        "New status: 'todo' | 'in-progress' | 'done'.",
-      ),
+      status: z
+        .enum(SUBTASK_STATUSES)
+        .describe("New status: 'todo' | 'in-progress' | 'done'."),
     }),
   },
 );
@@ -290,8 +289,13 @@ export const addBlockerTool = tool(
   }) => {
     try {
       const task = await crud.getTask(db, taskId);
-      if (!task) return `Task #${taskId} does not exist; create it first.`;
-      const blocker = await crud.createBlocker(db, { title, description, taskId });
+      if (!task)
+        throw new Error(`Task #${taskId} does not exist; create it first.`);
+      const blocker = await crud.createBlocker(db, {
+        title,
+        description,
+        taskId,
+      });
       return `Logged blocker #${blocker.id}: "${blocker.title}" on task #${blocker.taskId}.`;
     } catch (e) {
       return `Failed to add blocker: ${(e as Error).message}`;
@@ -304,12 +308,14 @@ export const addBlockerTool = tool(
     schema: z.object({
       taskId: z.number().describe("Task id that is blocked."),
       title: z.string().min(1).describe("Short blocker title."),
-      description: z.string().min(1).describe("What's blocking and what unblocks it."),
+      description: z
+        .string()
+        .min(1)
+        .describe("What's blocking and what unblocks it."),
     }),
   },
 );
 
-// Tool registry (name -> tool), for wiring into an agent/toolkit later.
 // ponytail: Object.values over a literal keeps insert order and reads as intent.
 export const scrumTools = Object.values({
   list_epics_with_children: listEpicsWithChildren,
@@ -320,8 +326,6 @@ export const scrumTools = Object.values({
   create_subtask: createSubtaskTool,
   update_subtask_status: updateSubtaskStatusTool,
   add_blocker: addBlockerTool,
-}) as Record<string, (typeof listEpicsWithChildren) & { name: string; schema: z.ZodObject<any> }>;
-
-export default listEpicsWithChildren;
+}) as Record<string, StructuredTool & { schema: z.ZodObject<any> }>;
 
 export default listEpicsWithChildren;

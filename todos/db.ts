@@ -10,7 +10,8 @@ export function setupDatabase(path: string): BunSQLiteDatabase {
     const sqlite = new Database(path);
     // Enable FK enforcement so cascade works (SQLite defaults to off).
     sqlite.run("PRAGMA foreign_keys = ON");
-    db = drizzle({ client: sqlite });
+    const client = drizzle({ client: sqlite });
+    db = client;
     migrate(db, { migrationsFolder: "./drizzle" });
     return db;
   } catch (error) {

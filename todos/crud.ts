@@ -1,6 +1,15 @@
 import { eq } from "drizzle-orm";
 import type { BunSQLiteDatabase } from "drizzle-orm/bun-sqlite";
-import { epicsTable, tasksTable, subtasksTable, blockersTable } from "./schema";
+import {
+  epicsTable,
+  tasksTable,
+  subtasksTable,
+  blockersTable,
+  type EpicsRow,
+  type TasksRow,
+} from "./schema";
+
+type FlatTask = TasksRow & { subtaskIds: number[]; blockerIds: number[] };
 
 type Row = {
   id: number;
@@ -73,16 +82,11 @@ export async function deleteEpic(
   id: number,
 ): Promise<boolean> {
   // children first (FK enforcement), then the parent
-  const taskIds = (
-    await db
-      .select({ id: tasksTable.id })
-      .from(tasksTable)
-      .where(eq(tasksTable.epicId, id))
-  ).map((r) => r.id);
-  for (const tid of taskIds) await deleteTask(db, asId(tid));
-  for (const tid of taskIds) {
-    await deleteTask(db, tid);
-  }
+  const rows = await db
+    .select({ id: tasksTable.id })
+    .from(tasksTable)
+    .where(eq(tasksTable.epicId, id));
+  for (const r of rows) await deleteTask(db, asId(r.id));
   const row = (await db
     .delete(epicsTable)
     .where(eq(epicsTable.id, id))
@@ -152,27 +156,15 @@ export async function getEpicChildren(
   db: BunSQLiteDatabase,
   epicId: number,
   limit?: number,
-): Promise<
-  (Row & {
-    kind: "epic";
-    blockers?: { id: number; title: string; status: string }[];
-    subtasks?: { id: number; title: string; status: string }[];
-  }) | (Row & {
-    kind: "task";
-    epicId: number;
-    description: string;
-    blockers: { id: number; title: string; status: string }[];
-    subtasks: { id: number; title: string; status: string }[];
-  })
-  >[] {
-  const rows: any[] = [];
-  const push = (r: Row) => rows.push({ ...r, kind: "epic" as const });
+): Promise<(EpicsRow | FlatTask)[]> {
+  const rows: (EpicsRow | FlatTask)[] = [];
+  const push = (r: Row, kind: "epic" | "task") => rows.push({ ...r, kind });
   for (const e of await db
     .select()
     .from(epicsTable)
     .where(eq(epicsTable.id, asId(epicId)))
     .limit(limit ?? Infinity)) {
-    push(e);
+    push(e, "epic");
   }
   const tasks = await db
     .select()
@@ -180,17 +172,25 @@ export async function getEpicChildren(
     .where(eq(tasksTable.epicId, asId(epicId)))
     .orderBy(tasksTable.id);
   for (const t of tasks) {
-    const subtasks = await db
-      .select()
+    // only ids forwarded; detail re-fetched on demand by the list tool.
+    const _subtasks = await db
+      .select({ id: subtasksTable.id })
       .from(subtasksTable)
-      .where(eq(subtasksTable.taskId, t.id))
-      .orderBy(subtasksTable.id);
-    const blockers = await db
-      .select()
+      .where(eq(subtasksTable.taskId, t.id));
+    const _blockers = await db
+      .select({ id: blockersTable.id })
       .from(blockersTable)
-      .where(eq(blockersTable.taskId, t.id))
-      .orderBy(blockersTable.id);
-    push({ ...t, kind: "task" as const, epicId: t.epicId, description: t.description, blockers, subtasks });
+      .where(eq(blockersTable.taskId, t.id));
+    push(
+      {
+        ...t,
+        epicId: asId(t.epicId),
+        description: t.description,
+        subtaskIds: _subtasks.map((s) => Number(s.id)),
+        blockerIds: _blockers.map((b) => Number(b.id)),
+      },
+      "task",
+    );
   }
   return rows;
 }
