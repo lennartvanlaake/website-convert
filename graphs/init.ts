@@ -7,13 +7,11 @@ import {
 } from "@langchain/langgraph";
 
 import { $ } from "bun";
-import z, { set } from "zod";
+import z from "zod";
 import { readdir } from "node:fs/promises";
 import { existsSync } from "node:fs";
-import { ChatOpenAI } from "@langchain/openai";
-import { HumanMessage } from "@langchain/core/messages";
 
-const StateDef = z.object({
+export const StateDef = z.object({
   url: z.string(),
   project: z.string(),
   origin_dir: z.string().default(""),

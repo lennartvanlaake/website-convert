@@ -1,5 +1,5 @@
 import Database from "bun:sqlite";
-import { BunSQLiteDatabase, drizzle } from "drizzle-orm/bun-sqlite";
+import { type BunSQLiteDatabase, drizzle } from "drizzle-orm/bun-sqlite";
 import { sqliteTable, integer, text } from "drizzle-orm/sqlite-core";
 import { migrate } from "drizzle-orm/bun-sqlite/migrator";
 
@@ -8,6 +8,8 @@ let db: BunSQLiteDatabase;
 export function setupDatabase(path: string): BunSQLiteDatabase {
   try {
     const sqlite = new Database(path);
+    // Enable FK enforcement so cascade works (SQLite defaults to off).
+    sqlite.run("PRAGMA foreign_keys = ON");
     db = drizzle({ client: sqlite });
     migrate(db, { migrationsFolder: "./drizzle" });
     return db;

@@ -19,6 +19,8 @@
     "@langchain/textsplitters": "^1.0.1",
     "@xenova/transformers": "^2.17.2",
     "better-sqlite3": "^11.8.1",
+    "deepagents": "^1.13.2",
+    "directory-tree": "^3.6.0",
     "drizzle-orm": "^0.45.2",
     "langchain": "^1.5.10",
     "sqlite-vec": "^0.1.9",

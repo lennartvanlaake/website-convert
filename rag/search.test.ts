@@ -60,7 +60,9 @@ describe("search", () => {
     // res is non-empty: the paraphrase must rank-first (guarantees res[0]).
     expect(res.length).toBe(1);
     expect(res[0]!.source).toBe("cats");
-    expect(res[0]!.content).toBe("A cat is a small domestic feline pet animal.");
+    expect(res[0]!.content).toBe(
+      "A cat is a small domestic feline pet animal.",
+    );
     expect(res[0]!.distance).toBeGreaterThanOrEqual(0);
   });
 
