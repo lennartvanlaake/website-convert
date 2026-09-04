@@ -1,12 +1,7 @@
 import { test, expect, describe, beforeAll, afterAll } from "bun:test";
 import { eq } from "drizzle-orm";
-import { setupDatabase } from "../db";
-import {
-  epicsTable,
-  tasksTable,
-  subtasksTable,
-  blockersTable,
-} from "../schema";
+import { setupDatabase } from "./db";
+import { epicsTable, tasksTable, subtasksTable, blockersTable } from "./schema";
 import { z } from "zod";
 import {
   listEpicsWithChildren,

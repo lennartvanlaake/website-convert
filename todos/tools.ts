@@ -1,7 +1,7 @@
 import { tool, type StructuredTool } from "@langchain/core/tools";
 import { z } from "zod";
-import { db } from "../db";
-import * as crud from "../crud";
+import { db } from "./db";
+import * as crud from "./crud";
 
 // ponytail: structured tools so the schema is exposed to the model (name,
 // description, typed params) — this is what DynamicStructuredTool / tool()
