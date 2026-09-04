@@ -1,12 +1,16 @@
 import { $ } from "bun";
+import type { ShellError } from "bun";
 
 // ponytail: thin wrappers over the 4 git commands. Each call returns text so
 // the tool layer can format it; throwing on a non-zero exit lets the wrapper
-// surface the real failure instead of swallowing it.
+// surface the real failure instead of swallowing it. An optional cwd lets the
+// wrappers run inside a specific repo (used by tests) without a process-wide
+// global, so the agent's default usage stays scoped to the project root.
+type GitArgs = string[];
 
-async function run(cmd: string, args: string[]): Promise<string> {
+async function run(args: GitArgs, cwd?: string): Promise<string> {
   try {
-    const res = await $`git ${args}`;
+    const res = cwd ? await $`git -C ${cwd} ${args}` : await $`git ${args}`;
     return (await res).text();
   } catch (e) {
     console.error(`git ${args.join(" ")} failed:`, e);
@@ -14,15 +18,40 @@ async function run(cmd: string, args: string[]): Promise<string> {
   }
 }
 
-export const gitDiff = async (): Promise<string> =>
-  run("diff", ["--staged"]) + "\n" + run("diff", ["--"]);
+// ponytail: `git <args> --quiet` signals a non-empty diff via its exit code,
+// not its stdout (a diff has empty output), so capture exitCode separately.
+// Returns the exit code (0/1) rather than throwing, for the --quiet probes.
+async function runQuiet(args: GitArgs, cwd?: string): Promise<number> {
+  try {
+    await $`git -C ${cwd} ${args}`;
+    return 0;
+  } catch (e) {
+    const code = (e as unknown as ShellError).exitCode;
+    return typeof code === "number" ? code : 1;
+  }
+}
 
-export const gitAdd = async (): Promise<string> => run("add", ["-A"]);
+export const gitDiff = async (cwd?: string): Promise<string> => {
+  // staged (index vs HEAD), then unstaged/untracked (working tree vs index).
+  const staged = await run(["diff", "--staged"], cwd);
+  const unstaged = await run(["diff", "--"], cwd);
+  // `git diff --cached --quiet` has no stdout; it exits 1 when the index differs
+  // from HEAD, so the "staged changes present" marker must key off the exit code,
+  // not the output length (otherwise it is always false).
+  const hasStaged =
+    (await runQuiet(["diff", "--cached", "--quiet"], cwd)) === 1;
+  return staged + unstaged + (hasStaged ? "\n(staged changes present)\n" : "");
+};
+
+export const gitAdd = async (cwd?: string): Promise<string> =>
+  run(["add", "-A"], cwd);
 
 export const gitCommit = async (
   message: string,
-): Promise<string> => run("commit", ["-m", message]);
+  cwd?: string,
+): Promise<string> => run(["commit", "-m", message], cwd);
 
 export const gitRevert = async (
   target: string,
-): Promise<string> => run("revert", ["--no-commit", target]);
+  cwd?: string,
+): Promise<string> => run(["revert", "--no-commit", target], cwd);

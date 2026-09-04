@@ -7,8 +7,7 @@ import * as service from "./service";
 // shells out to git with the bun $ operator.
 
 export const gitDiffTool = tool(
-  async (): Promise<string> =>
-    `Staged:\n${await service.gitDiff()}`,
+  async (): Promise<string> => `Staged:\n${await service.gitDiff()}`,
   {
     name: "git_diff",
     description:
@@ -21,7 +20,8 @@ export const gitAddTool = tool(
   async (): Promise<string> => `Added: ${await service.gitAdd()}`,
   {
     name: "git_add",
-    description: "Stage all changes for the next commit (git add -A). Use once you've reviewed the diff and are ready to commit.",
+    description:
+      "Stage all changes for the next commit (git add -A). Use once you've reviewed the diff and are ready to commit.",
     schema: z.object({}),
   },
 );

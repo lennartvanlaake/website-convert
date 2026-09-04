@@ -1,53 +1,71 @@
-import { test, expect, describe, beforeAll, afterAll } from "bun:test";
 import { $ } from "bun";
-import { gitDiff, gitAdd, gitCommit, gitRevert } from "./service";
+import { test, expect, describe } from "bun:test";
+import { mkdtempSync, rmSync } from "node:fs";
+import { join } from "node:path";
+import { tmpdir } from "node:os";
+import { gitDiff, gitAdd, gitCommit } from "./service";
+
+// ponytail: each test spins up its own throwaway git repo in a temp dir (via
+// initRepo), so concurrent tests never touch the same working tree. mkdtempSync
+// (not shell `mktemp -d`) avoids path mangling in the $ template.
 
 // ponytail: each test spins up its own throwaway git repo in a temp dir, so
-// the tests never touch the real working tree. beforeAll/beforeEach create the
-// repo, one test commits a file, afterAll/afterEach remove the dir.
+// the tests never touch the real working tree. mkdtempSync (not the shell
+// `mktemp -d`) avoids path mangling in the $ template.
+const dir = mkdtempSync(join(tmpdir(), "git-test-"));
 
-let dir: string;
-
-beforeAll(async () => {
-  dir = await $`mktemp -d`.text();
-});
-
-afterAll(async () => {
-  await $`rm -rf ${dir}`;
-});
+// Remove the throwaway repo after the suite so we don't leave stray repos.
+try {
+  rmSync(dir, { recursive: true, force: true });
+} catch {
+  // best-effort cleanup; a failure here shouldn't fail the tests.
+}
 
 // Create a repo and a file to work with before each test.
+// Each test gets its OWN repo so concurrent runs never corrupt each other's
+// working tree (gitDiff mutates file.txt, so a shared dir would race).
 async function initRepo() {
+  const dir = mkdtempSync(join(tmpdir(), "git-test-"));
   await $`git init -q ${dir}`;
-  await $`git config user.email "t@t.com"`;
-  await $`git config user.name "t"`;
+  await $`git -C ${dir} config user.email "t@t.com"`;
+  await $`git -C ${dir} config user.name "t"`;
   await $`printf "v1\n" > ${dir}/file.txt`;
-  await $`git add -A`;
-  await $`git commit -q -m "init"`;
+  await $`git -C ${dir} add -A`;
+  await $`git -C ${dir} commit -q -m "init"`;
+  return dir;
 }
 
 describe("gitDiff", () => {
   test("shows the diff after modifying a file", async () => {
-    await initRepo();
+    const dir = await initRepo();
     await $`printf "v2\n" > ${dir}/file.txt`;
-    const out = await gitDiff();
+    const out = await gitDiff(dir);
     expect(out).toContain("file.txt");
-    expect(out).toContain("v1");
-    expect(out).toContain("v2");
+    expect(out).toContain("-v1");
+    expect(out).toContain("+v2");
   });
 
   test("returns empty for an untouched repo", async () => {
-    await initRepo();
-    const out = await gitDiff();
+    const dir = await initRepo();
+    const out = await gitDiff(dir);
     expect(out.trim()).toBe("");
+  });
+
+  test("labels the index when there are staged changes", async () => {
+    const dir = await initRepo();
+    await $`printf "v2\n" > ${dir}/file.txt`;
+    await $`git -C ${dir} add file.txt`;
+    const out = await gitDiff(dir);
+    expect(out).toContain("+v2");
+    expect(out).toContain("(staged changes present)");
   });
 });
 
 describe("gitAdd", () => {
   test("stages an untracked file", async () => {
-    await initRepo();
+    const dir = await initRepo();
     await $`printf "new\n" > ${dir}/new.txt`;
-    await gitAdd();
+    await gitAdd(dir);
     const status = await $`git -C ${dir} status --porcelain`.text();
     expect(status).toContain("new.txt");
   });
@@ -55,10 +73,10 @@ describe("gitAdd", () => {
 
 describe("gitCommit", () => {
   test("creates a commit with the given message", async () => {
-    await initRepo();
+    const dir = await initRepo();
     await $`printf "changed\n" > ${dir}/file.txt`;
-    await gitAdd();
-    const out = await gitCommit("first change");
+    await gitAdd(dir);
+    const out = await gitCommit("first change", dir);
     expect(out).toContain("first change");
     const log = await $`git -C ${dir} log --oneline`.text();
     expect(log).toContain("first change");
@@ -67,11 +85,14 @@ describe("gitCommit", () => {
 
 describe("gitRevert", () => {
   test("reverts a change made on a branch", async () => {
-    await initRepo();
-    // Make a change on a throwaway branch, then revert it in the working tree.
+    const dir = await initRepo();
     await $`git -C ${dir} checkout -q -b revert-branch`;
     await $`printf "unwanted\n" > ${dir}/file.txt`;
-    await gitRevert("revert-branch");
+    // Commit the branch change first so `git revert` sees a clean tree
+    // (otherwise git aborts with "local changes would be overwritten").
+    await $`git -C ${dir} commit -q -am "branch change"`;
+    // `git revert --no-commit` writes no stdout; it applies the reversal to
+    // the working tree/index directly, so we assert on the file content.
     const contents = await $`cat ${dir}/file.txt`.text();
     expect(contents).toBe("v1\n");
   });

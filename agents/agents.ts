@@ -10,6 +10,7 @@ import {
   summarizationMiddleware,
   todoListMiddleware,
 } from "langchain";
+import { scoutTools } from "./tools";
 
 export const ScoutReportSchema = z.object({
   tldr: z
@@ -56,7 +57,7 @@ const loggingCallbacks = {
   ],
 };
 
-export async function runDeepAgentScout(
+export async function runScout(
   dir: string,
   task: string,
 ): Promise<ScoutReportSchemaType> {
@@ -65,15 +66,18 @@ export async function runDeepAgentScout(
   // add RAG middleware
   const agent = createAgent({
     model: mainModel,
+    tools: scoutTools,
+    systemPrompt:
+      "You are a scouting agent with a very low memory. AVOID using read_file at all costs, especially on big files. Use precise search tools and per-line reads, head and tail to get quick and consise information on files",
     middleware: [
       summarizationMiddleware({
         model: miniModel,
         trigger: [{ tokens: 5000 }, { messages: 5 }],
-        keep: { messages: 20 },
+        keep: { messages: 5 },
       }),
       createFilesystemMiddleware({
         backend,
-        tools: ["ls", "read_file", "grep", "glob"],
+        tools: ["ls", "grep", "glob", "read_file"],
       }),
     ],
     responseFormat: ScoutReportSchema,
