@@ -56,6 +56,7 @@ export const planGraph = new StateGraph(StateDef)
   .addEdge(managerNode.name, END)
   .compile();
 
+// Exists for purposes
 const result = await planGraph.invoke({
   originDir:
     "/home/lennart/repos/ai-fiddling/website_convert/graphs/projects/mvk/original/www.mvk.edu.in",
