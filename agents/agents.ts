@@ -27,6 +27,22 @@ export const ManagerContextSchema = z.object({
 
 type ManagerContextSchemaType = z.infer<typeof ManagerContextSchema>;
 
+const loggingCallbacks = {
+  callbacks: [
+    {
+      handleToolStart(_tool, input, _runId) {
+        console.log("Tool start:", input);
+      },
+      handleToolEnd(output, _runId) {
+        console.log("Tool end:", output);
+      },
+      handleChatModelStart(_model, messages, _runId) {
+        console.log("Messages:", messages);
+      },
+    },
+  ],
+};
+
 export async function runDeepAgentScout(
   dir: string,
   task: string,
@@ -47,14 +63,17 @@ export async function runDeepAgentScout(
     responseFormat: ScoutReportSchema,
   });
 
-  const response = await agent.invoke({
-    messages: [
-      {
-        role: "user",
-        content: `${task}`,
-      },
-    ],
-  });
+  const response = await agent.invoke(
+    {
+      messages: [
+        {
+          role: "user",
+          content: `${task}`,
+        },
+      ],
+    },
+    loggingCallbacks,
+  );
 
   return response.structuredResponse;
 }
@@ -82,6 +101,7 @@ export async function runManagerAgent(
 
     {
       context: context,
+      ...loggingCallbacks,
     },
   );
 

@@ -58,8 +58,8 @@ export const listEpicsWithChildren = tool(
         .filter((r) => r !== undefined);
       return `Epics: ${rows.length}. ${
         out
-          .map((r) => `${r.kind}#${r.id} ${r.title} [${r.status ?? "—"}]`)
-          .join("; ") || "(none)"
+          .map((r) => `${r.kind} #${r.id} ${r.title} [${r.status ?? "—"}]`)
+          .join("\n") || "(none)"
       }`;
     } catch (e) {
       // ponytail: expose the real error, don't hide it behind a generic
@@ -154,10 +154,11 @@ export const createTaskTool = tool(
     description: string;
     epicId: number;
   }) => {
+    // Validate the epic exists so we never create an orphaned task.
+    const epic = await crud.getEpic(db, epicId);
+    if (!epic)
+      throw new Error(`Epic #${epicId} does not exist; create it first.`);
     try {
-      // Validate the epic exists so we never create an orphaned task.
-      const epic = await crud.getEpic(db, epicId);
-      if (!epic) return `Epic #${epicId} does not exist; create it first.`;
       const task = await crud.createTask(db, { title, description, epicId });
       return `Created task #${task.id}: "${task.title}" on epic #${task.epicId}.`;
     } catch (e) {
@@ -220,10 +221,11 @@ export const createSubtaskTool = tool(
     description: string;
     taskId: number;
   }) => {
+    // Validate the task exists so we never create an orphaned subtask.
+    const task = await crud.getTask(db, taskId);
+    if (!task)
+      throw new Error(`Task #${taskId} does not exist; create it first.`);
     try {
-      const task = await crud.getTask(db, taskId);
-      if (!task)
-        throw new Error(`Task #${taskId} does not exist; create it first.`);
       const subtask = await crud.createSubtask(db, {
         title,
         description,
@@ -287,10 +289,11 @@ export const addBlockerTool = tool(
     title: string;
     description: string;
   }) => {
+    // Validate the task exists so we never create an orphaned blocker.
+    const task = await crud.getTask(db, taskId);
+    if (!task)
+      throw new Error(`Task #${taskId} does not exist; create it first.`);
     try {
-      const task = await crud.getTask(db, taskId);
-      if (!task)
-        throw new Error(`Task #${taskId} does not exist; create it first.`);
       const blocker = await crud.createBlocker(db, {
         title,
         description,
@@ -317,15 +320,18 @@ export const addBlockerTool = tool(
 );
 
 // ponytail: Object.values over a literal keeps insert order and reads as intent.
-export const scrumTools = Object.values({
-  list_epics_with_children: listEpicsWithChildren,
-  create_epic: createEpicTool,
-  update_epic_status: updateEpicStatusTool,
-  create_task: createTaskTool,
-  update_task_status: updateTaskStatusTool,
-  create_subtask: createSubtaskTool,
-  update_subtask_status: updateSubtaskStatusTool,
-  add_blocker: addBlockerTool,
-}) as Record<string, StructuredTool & { schema: z.ZodObject<any> }>;
+// ponytail: Object.fromEntries preserves the exported names as keys; using
+// Object.values({...}) would give numeric keys ("0".."7"), which breaks
+// registry lookups by tool name.
+export const scrumTools = Object.fromEntries([
+  ["list_epics_with_children", listEpicsWithChildren],
+  ["create_epic", createEpicTool],
+  ["update_epic_status", updateEpicStatusTool],
+  ["create_task", createTaskTool],
+  ["update_task_status", updateTaskStatusTool],
+  ["create_subtask", createSubtaskTool],
+  ["update_subtask_status", updateSubtaskStatusTool],
+  ["add_blocker", addBlockerTool],
+]) as Record<string, StructuredTool & { schema: z.ZodObject<any> }>;
 
 export default listEpicsWithChildren;

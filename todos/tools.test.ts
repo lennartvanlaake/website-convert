@@ -2,7 +2,7 @@ import { test, expect, describe, beforeAll, afterAll } from "bun:test";
 import { eq } from "drizzle-orm";
 import { setupDatabase } from "./db";
 import { epicsTable, tasksTable, subtasksTable, blockersTable } from "./schema";
-import { z } from "zod";
+import type { z } from "zod";
 import {
   listEpicsWithChildren,
   createEpicTool,
@@ -234,8 +234,11 @@ describe("tool registry", () => {
     // Every tool must expose a JSON-schema so the agent can call it.
     for (const [name, t] of Object.entries(scrumTools)) {
       expect(t.name).toBe(name);
-      expect(z.input).toBeDefined(); // schema is present
-      expect((t as { schema: z.ZodObject<any> }).schema.shape).toBeDefined();
+      // schema is present at runtime (zod type + JSON schema) for the agent
+      expect((t as { schema: z.ZodObject<any> }).schema.type).toBe("object");
+      expect(
+        (t as { schema: z.ZodObject<any> }).schema.def.shape,
+      ).toBeDefined();
     }
   });
 });

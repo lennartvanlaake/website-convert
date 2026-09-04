@@ -1,4 +1,0 @@
-{"type":"session_rebound","value":{"reason":"startup"},"at":"2026-08-27T05:39:27.826Z"}
-{"type":"session_waiting_for_load","value":{"reason":"startup"},"at":"2026-08-27T05:39:27.837Z"}
-{"type":"state","value":{"goal":null,"list":[],"loop":null,"mainModelRecovery":null,"lastModelRef":"llama-server=http://127.0.0.1:8080/Ornith","lastCompactionAt":null,"supervisorPausedAt":null,"loadHoldAt":null},"at":"2026-08-27T05:41:08.478Z"}
-{"type":"session_shutdown","value":{"reason":"quit"},"at":"2026-08-27T06:21:43.448Z"}

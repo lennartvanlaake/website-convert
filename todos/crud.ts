@@ -159,11 +159,14 @@ export async function getEpicChildren(
 ): Promise<(EpicsRow | FlatTask)[]> {
   const rows: (EpicsRow | FlatTask)[] = [];
   const push = (r: Row, kind: "epic" | "task") => rows.push({ ...r, kind });
-  for (const e of await db
+  // ponytail: omit LIMIT entirely when unset — passing `Infinity` as a bound
+  // param makes bun:sqlite emit `LIMIT ∞`, which SQLite rejects as a type mismatch.
+  const query = db
     .select()
     .from(epicsTable)
-    .where(eq(epicsTable.id, asId(epicId)))
-    .limit(limit ?? Infinity)) {
+    .where(eq(epicsTable.id, asId(epicId)));
+  const limited = limit && limit > 0 ? query.limit(limit) : query;
+  for (const e of await limited) {
     push(e, "epic");
   }
   const tasks = await db
