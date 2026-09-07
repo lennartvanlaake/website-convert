@@ -15,17 +15,21 @@ export const StateDef = z.object({
 });
 
 const scoutNode: GraphNode<typeof StateDef> = async (state) => {
+  state.originTree = dirTree(state.originDir);
+
   state.originStateSummary = await runScout(
     state.originDir,
     `This directory contains a copy of a website. The over-all goal is to copy the look and content of this website precisely, but with a different CMS and therefore different code and page-structure. Explain the structure of the website, the features of the code and how the structure of the website relates to the structure of the folder. Take special note of anything that deserves special attention when copying the website's look, content and funcitonality (modals, iframes, custom code, etc). Be detailed, but avoid fluff and politeness No need to provide a tree of files, that is known`,
+
+    state.originTree,
   );
 
-  state.originTree = dirTree(state.originDir);
+  console.log("OUTPUT:" + JSON.stringify(state.originStateSummary));
 
-  state.targetStateSummary = await runScout(
-    state.originDir,
-    `This directory contains a work-in-progress Astro-CMS project using SveltiaCMS meant to host a static website. Give a summary of what the content of the website is so far, which Collections are defined and generally the progress of making this a full website. Ignore the  scaffolding of AstroCMS and Sveltia, that is a given.`,
-  );
+  // state.targetStateSummary = await runScout(
+  //   state.originDir,
+  //   `This directory contains a work-in-progress Astro-CMS project using SveltiaCMS meant to host a static website. Give a summary of what the content of the website is so far, which Collections are defined and generally the progress of making this a full website. Ignore the  scaffolding of AstroCMS and Sveltia, that is a given.`,
+  // );
 
   state.targetTree = dirTree(state.targetDir);
   return state;
@@ -64,5 +68,5 @@ const result = await planGraph.invoke({
     "/home/lennart/repos/ai-fiddling/website_convert/graphs/projects/mvk/target",
 });
 
-console.log(JSON.stringify(result));
+// console.log(JSON.stringify(result));
 // await graph.invoke({ url: "https://www.mvk.edu.in", project: "mvk" });

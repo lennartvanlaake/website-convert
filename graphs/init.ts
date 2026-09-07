@@ -97,4 +97,7 @@ export const init_graph = new StateGraph(StateDef)
   .addEdge(pullNode.name, END)
   .compile();
 
-// await graph.invoke({ url: "https://www.mvk.edu.in", project: "mvk" });
+await init_graph.invoke({
+  url: "https://preview.astro.new/portfolio",
+  project: "portfolio",
+});

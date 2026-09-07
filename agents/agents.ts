@@ -2,15 +2,38 @@ import {
   createFilesystemMiddleware,
   createSummarizationMiddleware,
   FilesystemBackend,
+  StateBackend,
 } from "deepagents";
 import { mainModel, miniModel } from "../models";
 import { z } from "zod";
-import {
-  createAgent,
-  summarizationMiddleware,
-  todoListMiddleware,
-} from "langchain";
+import { createAgent, todoListMiddleware } from "langchain";
 import { scoutTools } from "./tools";
+import { $ } from "bun";
+
+function printContent(input: any) {
+  // if (input.content) {
+  //   console.log(typeof input);
+  //   console.log(input.content);
+  // } else {
+  console.log(input);
+  // }
+}
+
+const loggingCallbacks = {
+  callbacks: [
+    {
+      handleToolStart(_tool, input, _runId) {
+        printContent(input);
+      },
+      handleToolEnd(output, _runId) {
+        printContent(output);
+      },
+      handleChatModelStart(_model, messages, _runId) {
+        printContent(messages);
+      },
+    },
+  ],
+};
 
 export const ScoutReportSchema = z.object({
   tldr: z
@@ -30,71 +53,39 @@ export const ManagerContextSchema = z.object({
   target_tree: z.any(),
 });
 
+export const ScoutContexSchema = z.object({
+  fileTree: z.any(),
+});
+
 type ManagerContextSchemaType = z.infer<typeof ManagerContextSchema>;
-
-function printContent(input: any) {
-  if (input.content) {
-    console.log(typeof input);
-    console.log(input.content);
-  } else {
-    console.log(input);
-  }
-}
-
-const loggingCallbacks = {
-  callbacks: [
-    {
-      handleToolStart(_tool, input, _runId) {
-        printContent(input);
-      },
-      handleToolEnd(output, _runId) {
-        printContent(output);
-      },
-      handleChatModelStart(_model, messages, _runId) {
-        printContent(messages);
-      },
-    },
-  ],
-};
 
 export async function runScout(
   dir: string,
   task: string,
+  originTree: any,
 ): Promise<ScoutReportSchemaType> {
-  const backend = new FilesystemBackend({ rootDir: dir, virtualMode: true });
+  console.log(task);
+  $.cwd(dir);
 
   // add RAG middleware
   const agent = createAgent({
     model: mainModel,
     tools: scoutTools,
-    systemPrompt:
-      "You are a scouting agent with a very low memory. AVOID using read_file at all costs, especially on big files. Use precise search tools and per-line reads, head and tail to get quick and consise information on files",
+    contextSchema: ScoutContexSchema,
     middleware: [
-      summarizationMiddleware({
-        model: miniModel,
-        trigger: [{ tokens: 5000 }, { messages: 5 }],
-        keep: { messages: 5 },
-      }),
-      createFilesystemMiddleware({
-        backend,
-        tools: ["ls", "grep", "glob", "read_file"],
-      }),
+      // createSummarizationMiddleware({ model: miniModel, backend }),
+      // todoListMiddleware(),
     ],
     responseFormat: ScoutReportSchema,
   });
 
   const response = await agent.invoke(
     {
-      messages: [
-        {
-          role: "user",
-          content: `${task}`,
-        },
-      ],
+      messages: [task],
     },
-
     {
-      recursionLimit: 500,
+      configurable: { thread_id: "1" },
+      context: { fileTree: originTree },
       ...loggingCallbacks,
     },
   );
@@ -122,9 +113,8 @@ export async function runManagerAgent(
         },
       ],
     },
-
     {
-      context: context,
+      context,
       ...loggingCallbacks,
     },
   );

@@ -1,10 +1,11 @@
 import * as z from "zod";
+export { wc, head, tail, readLines, ls, grepRecursive };
 import { tool } from "langchain";
 import { $ } from "bun";
 
 const wc = tool(
   async ({ file, type }) => {
-    return await $`wc -${type} ${file}`;
+    return (await $`wc -${type} ${file}`).text();
   },
   {
     name: "wc",
@@ -23,7 +24,7 @@ const wc = tool(
 
 const head = tool(
   async ({ file }) => {
-    return await $`head ${file}`;
+    return (await $`head ${file}`).text();
   },
   {
     name: "head",
@@ -36,7 +37,7 @@ const head = tool(
 
 const tail = tool(
   async ({ file }) => {
-    return await $`rtk tail ${file}`;
+    return (await $`rtk tail ${file}`).text();
   },
   {
     name: "tail",
@@ -47,12 +48,41 @@ const tail = tool(
   },
 );
 
+const ls = tool(
+  async ({ path }) => {
+    return (await $`ls ${path}`).text();
+  },
+  {
+    name: "ls",
+    description: "Lists directory contents",
+    schema: z.object({
+      path: z.string().describe("Directory or file to list"),
+    }),
+  },
+);
+
+const grepRecursive = tool(
+  async ({ path, pattern }) => {
+    return (await $`grep -R -n ${pattern} ${path}`).text();
+  },
+  {
+    name: "grepRecursive",
+    description: "Recursively searches for a pattern in a directory",
+    schema: z.object({
+      path: z.string().describe("Directory or file to search"),
+      pattern: z.string().describe("Pattern to search for"),
+    }),
+  },
+);
+
 const readLines = tool(
   async ({ file, startLine, numberOfLines }) => {
     if (numberOfLines > 100) {
       return "ERROR: numberOfLines cannot be higher than 100";
     }
-    return await $`sed -n ${startLine},${startLine + numberOfLines} ${file}`;
+    return (
+      await $`sed -n ${startLine},${startLine + numberOfLines}p ${file}`
+    ).text();
   },
   {
     name: "wordcount",
@@ -65,4 +95,4 @@ const readLines = tool(
   },
 );
 
-export const scoutTools = [wc, head, tail, readLines];
+export const scoutTools = [wc, head, tail, readLines, ls, grepRecursive];
