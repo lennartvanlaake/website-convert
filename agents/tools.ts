@@ -75,6 +75,39 @@ const grepRecursive = tool(
   },
 );
 
+const simplyHtml = tool(
+  async ({ path }) => {
+    return (await $`cat ${path} | trafilatura --html`).text();
+  },
+  {
+    name: "simplifyBodyHtml",
+    description:
+      "Returns a vastly simplified version of the html in the body of the file. Keeps headers and text, strips everything else",
+    schema: z.object({
+      path: z.string().describe("HTML file"),
+    }),
+  },
+);
+
+const searchHtml = tool(
+  async ({ path, query }) => {
+    return (await $`cat ${path} | pup '${query}'`).text();
+  },
+  {
+    name: "simplifyBodyHtml",
+    description:
+      "Returns a vastly simplified version of the html in the body of the file. Keeps headers and text, strips everything else",
+    schema: z.object({
+      path: z.string().describe("HTML file"),
+      query: z
+        .string()
+        .describe(
+          "CSS query for the element ('nav' to get the contents of nav element, '.someclass' for elements with class='someclass' )",
+        ),
+    }),
+  },
+);
+
 const readLines = tool(
   async ({ file, startLine, numberOfLines }) => {
     if (numberOfLines > 100) {
@@ -85,8 +118,8 @@ const readLines = tool(
     ).text();
   },
   {
-    name: "wordcount",
-    description: "Outputs last 10 lines of a file",
+    name: "readLines",
+    description: "Reads specified lines from a file",
     schema: z.object({
       file: z.string(),
       startLine: z.number(),
@@ -95,4 +128,4 @@ const readLines = tool(
   },
 );
 
-export const scoutTools = [wc, head, tail, readLines, ls, grepRecursive];
+export const scoutTools = [wc, readLines, ls, simplyHtml, searchHtml];

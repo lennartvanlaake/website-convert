@@ -1,9 +1,8 @@
 import { z } from "zod";
 import { StateGraph, START, END } from "@langchain/langgraph";
 
-import { init_graph as initGraph } from "./init.ts";
+import { initGraph } from "./init.ts";
 import { planGraph } from "./plan.ts";
-import { pl } from "zod/v4/locales";
 
 // Parent graph mirrors the subgraph's schema so the compiled subgraph shares
 // its channels. No wrapper needed (shared-keys subgraph pattern).
@@ -17,15 +16,18 @@ const MainState = z.object({
 // Parent graph: construct from the subgraph's state schema so the compiled
 // subgraph shares its channels. `init_graph` (a CompiledStateGraph) is passed
 // straight to addNode — no wrapper needed (shared-keys subgraph pattern).
-export const main_graph = new StateGraph(MainState)
-  .addNode(initGraph.name!!, initGraph)
-  .addNode(planGraph.name!!, planGraph)
-  .addEdge(START, initGraph.name!!)
-  .addEdge(initGraph.name!!, planGraph.name!!)
-  .addEdge(planGraph.name!!, END)
+
+JSON.stringify(initGraph);
+JSON.stringify(planGraph);
+export const mainGraph = new StateGraph(MainState)
+  .addNode("1", initGraph)
+  .addNode("2", planGraph)
+  .addEdge(START, "1")
+  .addEdge("1", "2")
+  .addEdge("2", END)
   .compile();
 
-await initGraph.invoke({
+await mainGraph.invoke({
   url: "https://preview.astro.new/portfolio",
   project: "portfolio",
 });

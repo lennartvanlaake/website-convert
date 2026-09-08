@@ -5,7 +5,7 @@ import {
   StateBackend,
 } from "deepagents";
 import { mainModel, miniModel } from "../models";
-import { z } from "zod";
+import { uuidv4, z } from "zod";
 import { createAgent, todoListMiddleware } from "langchain";
 import { scoutTools } from "./tools";
 import { $ } from "bun";
@@ -84,7 +84,7 @@ export async function runScout(
       messages: [task],
     },
     {
-      configurable: { thread_id: "1" },
+      configurable: { thread_id: crypto.randomUUID() },
       context: { fileTree: originTree },
       ...loggingCallbacks,
     },

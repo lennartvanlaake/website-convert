@@ -61,12 +61,12 @@ export const planGraph = new StateGraph(StateDef)
   .compile();
 
 // Exists for purposes
-const result = await planGraph.invoke({
-  originDir:
-    "/home/lennart/repos/ai-fiddling/website_convert/graphs/projects/mvk/original/www.mvk.edu.in",
-  targetDir:
-    "/home/lennart/repos/ai-fiddling/website_convert/graphs/projects/mvk/target",
-});
+// const result = await planGraph.invoke({
+//   originDir:
+//     "/home/lennart/repos/ai-fiddling/website_convert/graphs/projects/mvk/original/www.mvk.edu.in",
+//   targetDir:
+//     "/home/lennart/repos/ai-fiddling/website_convert/graphs/projects/mvk/target",
+// });
 
 // console.log(JSON.stringify(result));
 // await graph.invoke({ url: "https://www.mvk.edu.in", project: "mvk" });

@@ -77,8 +77,7 @@ const setDirectoriesNode: GraphNode<typeof StateDef> = async (state) => {
   return state;
 };
 
-export const init_graph = new StateGraph(StateDef)
-
+export const initGraph = new StateGraph(StateDef)
   .addNode(checkOriginNeedsInit.name, checkOriginNeedsInit, {
     ends: [originalInitNode.name, checkTargetNeedsInit.name],
   })
@@ -96,8 +95,3 @@ export const init_graph = new StateGraph(StateDef)
   .addEdge(setDirectoriesNode.name, pullNode.name)
   .addEdge(pullNode.name, END)
   .compile();
-
-await init_graph.invoke({
-  url: "https://preview.astro.new/portfolio",
-  project: "portfolio",
-});
