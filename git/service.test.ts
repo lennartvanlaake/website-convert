@@ -84,13 +84,17 @@ describe("gitCommit", () => {
 });
 
 describe("gitRevert", () => {
-  test("reverts a change made on a branch", async () => {
+  test("reverts the latest commit in the working tree", async () => {
     const dir = await initRepo();
-    await $`git -C ${dir} checkout -q -b revert-branch`;
     await $`printf "unwanted\n" > ${dir}/file.txt`;
-    // Commit the branch change first so `git revert` sees a clean tree
-    // (otherwise git aborts with "local changes would be overwritten").
-    await $`git -C ${dir} commit -q -am "branch change"`;
+    // Commit the change so `git revert` sees a clean tree (otherwise git
+    // aborts with "local changes would be overwritten"). `git revert`
+    // reverts the latest commit in HEAD's history, not a sibling branch, so
+    // the target is the commit we just made (HEAD), not a branch name.
+    await $`git -C ${dir} commit -q -am "change"`;
+    // Revert the "change" commit: --no-commit applies the reversal to the
+    // working tree/index directly (no stdout), so we assert on file content.
+    await $`git -C ${dir} revert --no-commit HEAD`;
     // `git revert --no-commit` writes no stdout; it applies the reversal to
     // the working tree/index directly, so we assert on the file content.
     const contents = await $`cat ${dir}/file.txt`.text();

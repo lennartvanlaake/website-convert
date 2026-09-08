@@ -1,8 +1,11 @@
 import { test, expect, describe } from "bun:test";
 import { Buffer } from "buffer";
-import { wc, readLines, ls, grepRecursive } from "./tools";
+import { renderScoutTools } from "./tools";
 
 const FIX = `${import.meta.dir}/fixtures`;
+
+// List of tools, these should be used for the tests
+const scoutTools = renderScoutTools(FIX);
 
 // langchain's invoke() returns stdout as a Buffer, so normalize to a string.
 function out(r: { stdout: any }): string {

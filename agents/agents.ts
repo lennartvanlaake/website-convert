@@ -6,8 +6,12 @@ import {
 } from "deepagents";
 import { mainModel, miniModel } from "../models";
 import { uuidv4, z } from "zod";
-import { createAgent, todoListMiddleware } from "langchain";
-import { scoutTools } from "./tools";
+import {
+  createAgent,
+  summarizationMiddleware,
+  todoListMiddleware,
+} from "langchain";
+import { renderScoutTools } from "./tools";
 import { $ } from "bun";
 
 function printContent(input: any) {
@@ -15,7 +19,11 @@ function printContent(input: any) {
   //   console.log(typeof input);
   //   console.log(input.content);
   // } else {
-  console.log(input);
+  if (Array.isArray(input)) {
+    console.log(input[input.length - 1]);
+  } else {
+    console.log(input);
+  }
   // }
 }
 
@@ -64,16 +72,19 @@ export async function runScout(
   task: string,
   originTree: any,
 ): Promise<ScoutReportSchemaType> {
-  console.log(task);
   $.cwd(dir);
 
   // add RAG middleware
   const agent = createAgent({
     model: mainModel,
-    tools: scoutTools,
+    tools: renderScoutTools(dir),
     contextSchema: ScoutContexSchema,
     middleware: [
-      // createSummarizationMiddleware({ model: miniModel, backend }),
+      summarizationMiddleware({
+        model: miniModel,
+        trigger: { tokens: 4000, messages: 10 },
+        keep: { messages: 5 },
+      }),
       // todoListMiddleware(),
     ],
     responseFormat: ScoutReportSchema,

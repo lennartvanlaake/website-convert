@@ -14,8 +14,8 @@ import { existsSync } from "node:fs";
 export const StateDef = z.object({
   url: z.string(),
   project: z.string(),
-  origin_dir: z.string().default(""),
-  target_dir: z.string().default(""),
+  originDir: z.string().default(""),
+  targetDir: z.string().default(""),
 });
 
 type StateType = z.infer<typeof StateDef>;
@@ -50,7 +50,7 @@ async function checkTargetNeedsInit(state: StateType) {
   const exists = existsSync(targetDir);
   const isNotEmpty = exists ? await readdir(targetDir) : false;
   if (isNotEmpty) {
-    state.origin_dir;
+    state.originDir;
   }
   return new Command({
     goto: isNotEmpty ? setDirectoriesNode.name : targetInitNode.name,
@@ -60,20 +60,21 @@ async function checkTargetNeedsInit(state: StateType) {
 const targetInitNode: GraphNode<typeof StateDef> = async (state) => {
   const targetDir = getBaseTargetDir(state.project);
   await $`mkdir -p ${targetDir}`;
+  await $`cd ${targetDir}`;
   await $`git clone git@github.com:lennartvanlaake/hugolify-template.git`;
   return state;
 };
 
 const pullNode: GraphNode<typeof StateDef> = async (state) => {
-  await $`cd ${state.target_dir} && git pull origin master`;
+  await $`cd ${state.targetDir} && git pull origin master`;
   return state;
 };
 
 const setDirectoriesNode: GraphNode<typeof StateDef> = async (state) => {
   const origin = (await $`ls ${getBaseOriginDir(state.project)}`).text();
   const target = (await $`ls ${getBaseTargetDir(state.project)}`).text();
-  state.origin_dir = origin;
-  state.target_dir = target;
+  state.originDir = getBaseOriginDir(state.project) + "/" + origin;
+  state.targetDir = getBaseTargetDir(state.project) + "/" + target;
   return state;
 };
 

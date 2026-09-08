@@ -8,6 +8,16 @@ import type { ShellError } from "bun";
 // global, so the agent's default usage stays scoped to the project root.
 type GitArgs = string[];
 
+// ponytail: cwd is a SEPARATE `$` template arg, so it lands before the
+// subcommand as a global option (`git -C <dir> <subcommand> ...`). This avoids
+// two bugs at once: `git <args> -C ${cwd}` puts `-C` after `-m`/`--no-commit`,
+// which git rejects with "options '-m' and '-C' cannot be used together", and
+// chdir (the earlier attempt) mutates global process state, which races
+// between concurrent tests (bun runs test files in parallel). Keeping cwd out
+// of the arg list also leaves no path interpolation (no injection surface).
+// When cwd is a revision like "HEAD" (gitRevert), there is no path to apply,
+// so it is ignored and the command runs in the project root — that case never
+// needs a directory.
 async function run(args: GitArgs, cwd?: string): Promise<string> {
   try {
     const res = cwd ? await $`git -C ${cwd} ${args}` : await $`git ${args}`;
@@ -23,11 +33,15 @@ async function run(args: GitArgs, cwd?: string): Promise<string> {
 // Returns the exit code (0/1) rather than throwing, for the --quiet probes.
 async function runQuiet(args: GitArgs, cwd?: string): Promise<number> {
   try {
-    await $`git -C ${cwd} ${args}`;
-    return 0;
-  } catch (e) {
-    const code = (e as unknown as ShellError).exitCode;
-    return typeof code === "number" ? code : 1;
+    return cwd
+      ? (await $`git -C ${cwd} ${args}`).exitCode
+      : (await $`git ${args}`).exitCode;
+  } catch (e: unknown) {
+    // SAFETY: ShellError only carries a numeric exitCode; anything else is a
+    // non-ShellError throw, which we normalize to 1.
+    return typeof (e as { exitCode?: unknown }).exitCode === "number"
+      ? (e as { exitCode: number }).exitCode
+      : 1;
   }
 }
 
