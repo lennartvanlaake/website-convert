@@ -1,5 +1,5 @@
 import * as z from "zod";
-import { tool } from "langchain";
+import { tool } from "@langchain/core/tools";
 import { $ } from "bun";
 import { sandboxCommand } from "../sandbox/sandbox";
 
@@ -128,5 +128,5 @@ export function renderScoutTools(workingDir: string) {
       }),
     },
   );
-  return [wc, readLines, ls, simplyHtml, searchHtml];
+  return [wc, readLines, ls, grepRecursive, simplyHtml, searchHtml];
 }
