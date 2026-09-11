@@ -19,15 +19,17 @@ function printContent(input: any) {
   //   console.log(typeof input);
   //   console.log(input.content);
   // } else {
-  if (Array.isArray(input)) {
-    console.log(input[input.length - 1]);
-  } else {
-    console.log(input);
-  }
+
+  console.log(input);
+  // if (Array.isArray(input)) {
+  //   console.log(input[input.length - 1]);
+  // } else {
+  //   console.log(input);
+  // }
   // }
 }
 
-const loggingCallbacks = {
+export const loggingCallbacks = {
   callbacks: [
     {
       handleToolStart(_tool, input, _runId) {

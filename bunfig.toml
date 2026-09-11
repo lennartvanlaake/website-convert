@@ -1,0 +1,5 @@
+[test]
+pathIgnorePatterns = [
+  # Integration / E2E tests you want to run separately
+  "**/integration/**",
+]

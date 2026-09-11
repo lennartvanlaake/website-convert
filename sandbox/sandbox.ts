@@ -25,9 +25,17 @@ function sandboxTemplate(sandboxDir: string) {
 }
 
 export async function sandboxCommand(sandboxDir: string, command: string) {
-  const result = await exec(`${sandboxTemplate(sandboxDir.trim())} ${command}`);
-  return `stdout:\n${result.stdout}\nstderr:\n${result.stderr}`;
+  // ponytail: collapse to a single line so node's sh -c doesn't split the
+  // bwrap options across argv entries (multiline keeps "--chdir /path exit 3"
+  // as separate tokens, which execvp can't resolve).
+  const singleLine = command.split(/\s+/).filter(Boolean).join(" ");
+  const cmd = `${sandboxTemplate(sandboxDir.trim()).trim()} ${singleLine}`;
+  try {
+    const result = await exec(cmd);
+    return `stdout:\n${result.stdout}\nstderr:\n${result.stderr}`;
+  } catch (e: any) {
+    // ponytail: intentional non-zero exits ("exit 3", read-only writes) must
+    // surface their output, not throw, so callers can assert on it.
+    return `exit code ${e.code ?? 1}\n${e.stdout ?? ""}\n${e.stderr ?? ""}`;
+  }
 }
-
-const result = await sandboxCommand("/home/lennart", "ls");
-console.log(result);

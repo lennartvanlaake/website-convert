@@ -6,12 +6,6 @@ import * as crud from "./crud";
 // description, typed params) — this is what DynamicStructuredTool / tool()
 // build on top of. Zod gives validation + free JSON-schema for the agent.
 
-// ponytail: crud.* take a BunSQLiteDatabase instance; the tools read the
-// shared module-level `db` from ../db (not a captured const). A `let` so tests
-// can re-point it at a fresh :memory: DB via setupDatabase(); production calls
-// setupDatabase("./todos.db") once at startup.
-// typed as the drizzle client shape crud.* expects
-
 // Status vocabulary (Scrum-flavoured). These are the only accepted values; the
 // zod enums below enforce them so the model can't invent statuses.
 const TASK_STATUSES = ["todo", "in-progress", "done", "blocked"] as const;
@@ -23,7 +17,7 @@ export const createTaskTool = tool(
   async ({ title, description }: { title: string; description: string }) => {
     try {
       const task = await crud.createTask({ title, description });
-      return `Created task #${task.id}: "${task.title}".`;
+      return `Created task with id: ${task.id}".`;
     } catch (e) {
       return `Failed to create task: ${(e as Error).message}`;
     }
@@ -52,7 +46,7 @@ export const updateTaskStatusTool = tool(
     try {
       const task = await crud.updateTask(taskId, { status });
       if (!task) return `No task found with id ${taskId}.`;
-      return `Task #${task.id} is now "${status}".`;
+      return `Task with id ${task.id} is now "${status}".`;
     } catch (e) {
       return `Failed to update task: ${(e as Error).message}`;
     }
@@ -99,8 +93,7 @@ export const createSubtaskTool = tool(
   },
   {
     name: "create_subtask",
-    description:
-      "Create a subtask (a small concrete step inside a task). Use to decompose a task into actionable checkboxes.",
+    description: "Create a subtask (a small concrete step inside a task)",
     schema: z.object({
       title: z.string().min(1).describe("Subtask title."),
       description: z
@@ -142,10 +135,3 @@ export const updateSubtaskStatusTool = tool(
     }),
   },
 );
-
-export const scrumTools = Object.fromEntries([
-  ["create_task", createTaskTool],
-  ["update_task_status", updateTaskStatusTool],
-  ["create_subtask", createSubtaskTool],
-  ["update_subtask_status", updateSubtaskStatusTool],
-]) as Record<string, StructuredTool & { schema: z.ZodObject<any> }>;
