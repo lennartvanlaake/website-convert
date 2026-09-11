@@ -28,8 +28,8 @@ export const listEpicsWithChildren = tool(
   async ({ epicId, limit }: { epicId?: number; limit?: number }) => {
     try {
       const rows = epicId
-        ? await crud.getEpicChildren(db, epicId, limit)
-        : await crud.getAllEpics(db);
+        ? await crud.getEpicChildren(epicId, limit)
+        : await crud.getAllEpics();
       const out = rows
         .map((r) => {
           const taskIds =
@@ -92,7 +92,7 @@ export const listEpicsWithChildren = tool(
 export const createEpicTool = tool(
   async ({ title, description }: { title: string; description: string }) => {
     try {
-      const epic = await crud.createEpic(db, { title, description });
+      const epic = await crud.createEpic({ title, description });
       return `Created epic #${epic.id}: "${epic.title}".`;
     } catch (e) {
       // Re-throw so callers/tests see the real error instead of a masked string.
@@ -122,7 +122,7 @@ export const updateEpicStatusTool = tool(
     status: (typeof EPIC_STATUSES)[number];
   }) => {
     try {
-      const epic = await crud.updateEpic(db, epicId, { status });
+      const epic = await crud.updateEpic(epicId, { status });
       if (!epic) return `No epic found with id ${epicId}.`;
       return `Epic #${epic.id} is now "${status}".`;
     } catch (e) {
@@ -155,11 +155,11 @@ export const createTaskTool = tool(
     epicId: number;
   }) => {
     // Validate the epic exists so we never create an orphaned task.
-    const epic = await crud.getEpic(db, epicId);
+    const epic = await crud.getEpic(epicId);
     if (!epic)
       throw new Error(`Epic #${epicId} does not exist; create it first.`);
     try {
-      const task = await crud.createTask(db, { title, description, epicId });
+      const task = await crud.createTask({ title, description, epicId });
       return `Created task #${task.id}: "${task.title}" on epic #${task.epicId}.`;
     } catch (e) {
       return `Failed to create task: ${(e as Error).message}`;
@@ -189,7 +189,7 @@ export const updateTaskStatusTool = tool(
     status: (typeof TASK_STATUSES)[number];
   }) => {
     try {
-      const task = await crud.updateTask(db, taskId, { status });
+      const task = await crud.updateTask(taskId, { status });
       if (!task) return `No task found with id ${taskId}.`;
       return `Task #${task.id} is now "${status}".`;
     } catch (e) {
@@ -222,11 +222,11 @@ export const createSubtaskTool = tool(
     taskId: number;
   }) => {
     // Validate the task exists so we never create an orphaned subtask.
-    const task = await crud.getTask(db, taskId);
+    const task = await crud.getTask(taskId);
     if (!task)
       throw new Error(`Task #${taskId} does not exist; create it first.`);
     try {
-      const subtask = await crud.createSubtask(db, {
+      const subtask = await crud.createSubtask({
         title,
         description,
         taskId,
@@ -257,7 +257,7 @@ export const updateSubtaskStatusTool = tool(
     status: (typeof SUBTASK_STATUSES)[number];
   }) => {
     try {
-      const subtask = await crud.updateSubtask(db, subtaskId, { status });
+      const subtask = await crud.updateSubtask(subtaskId, { status });
       if (!subtask) return `No subtask found with id ${subtaskId}.`;
       return `Subtask #${subtask.id} is now "${status}".`;
     } catch (e) {
@@ -290,11 +290,11 @@ export const addBlockerTool = tool(
     description: string;
   }) => {
     // Validate the task exists so we never create an orphaned blocker.
-    const task = await crud.getTask(db, taskId);
+    const task = await crud.getTask(taskId);
     if (!task)
       throw new Error(`Task #${taskId} does not exist; create it first.`);
     try {
-      const blocker = await crud.createBlocker(db, {
+      const blocker = await crud.createBlocker({
         title,
         description,
         taskId,
