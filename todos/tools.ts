@@ -17,7 +17,7 @@ export const createTaskTool = tool(
   async ({ title, description }: { title: string; description: string }) => {
     try {
       const task = await crud.createTask({ title, description });
-      return `Created task with id: ${task.id}".`;
+      return `Created task with id: ${task.id}`;
     } catch (e) {
       return `Failed to create task: ${(e as Error).message}`;
     }

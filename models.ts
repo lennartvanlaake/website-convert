@@ -1,5 +1,14 @@
 import { ChatOpenAI, OpenAIEmbeddings } from "@langchain/openai";
 
+import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
+
+const localProvider = createOpenAICompatible({
+  name: "local",
+  baseURL: "http://localhost:8080/v1",
+});
+
+export const sdkMainModel = localProvider("Ornith");
+
 export const mainModel = new ChatOpenAI({
   model: "Ornith",
   temperature: 0,

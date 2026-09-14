@@ -13,12 +13,15 @@
     "typescript": "^5"
   },
   "dependencies": {
+    "@ai-sdk/openai": "^4.0.66",
+    "@ai-sdk/openai-compatible": "^3.0.48",
     "@anthropic-ai/sandbox-runtime": "^0.0.75",
     "@huggingface/transformers": "^4.2.0",
     "@langchain/langgraph": "^1.4.13",
     "@langchain/openai": "^1.5.10",
     "@langchain/textsplitters": "^1.0.1",
     "@xenova/transformers": "^2.17.2",
+    "ai": "^7.0.99",
     "better-sqlite3": "^11.8.1",
     "deepagents": "^1.13.2",
     "directory-tree": "^3.6.0",

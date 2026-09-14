@@ -7,8 +7,12 @@ describe("Test the todo creation agent", () => {
   it("Creates todos", async () => {
     setupDatabase(":memory:");
 
+    // const result = await runManagerAgent(
+    //   "Create a task to do maths. Create subtasks for calculating 1+1, 1+2 and 2+2. You are not done until you have created three subtasks",
+    // );
+    //
     const result = await runManagerAgent(
-      "Create a task to do maths. Create subtasks for calculating 1+1, 1+2 and 2+2. You are not done until you have created three subtasks",
+      "List all the tools you have at your disposal",
     );
 
     const all = await listTasks();
