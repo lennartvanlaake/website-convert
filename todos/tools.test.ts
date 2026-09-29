@@ -1,13 +1,14 @@
 import { test, expect, describe, beforeAll } from "bun:test";
 import { eq } from "drizzle-orm";
 import { setupDatabase, db } from "./db";
-import { tasksTable, subtasksTable } from "./schema";
+import { subtasksTable } from "./schema";
 import {
-  createTaskTool,
   updateTaskStatusTool,
   createSubtaskTool,
   updateSubtaskStatusTool,
 } from "./tools";
+import { createTask, getTask, getSubtask } from "./crud";
+import { testInvokeTool } from "../shared/toolTester";
 
 // ponytail: tools own a real DB connection (setupDatabase in tools.ts), so the
 // tests exercise the full CRUD path through the tools, not just the crud layer.
@@ -19,17 +20,18 @@ describe("scrum task tools", () => {
   });
 
   test("update_task_status moves a task to done", async () => {
-    const made = await createTaskTool.execute({ title: "T", description: "d" });
-    const taskId = extractId(made);
+    const task = await createTask({ title: "T", description: "d" });
+    const taskId = task.id;
 
-    const res = await updateTaskStatusTool.execute({ taskId, status: "done" });
+    const res = await testInvokeTool(updateTaskStatusTool, {
+      taskId,
+      status: "done",
+    });
     expect(res).toContain("done");
 
-    const fetched = await db
-      .select()
-      .from(tasksTable)
-      .where(eq(tasksTable.id, taskId));
-    expect(fetched[0]!.status).toBe("done");
+    // Read the row back via the crud layer to confirm persistence.
+    const fetched = getTask(taskId);
+    expect(fetched.status).toBe("done");
   });
 });
 
@@ -38,12 +40,12 @@ describe("scrum subtask tools", () => {
 
   beforeAll(async () => {
     setupDatabase(":memory:");
-    const task = await createTaskTool.execute({ title: "T", description: "d" });
-    taskId = extractId(task);
+    const task = await createTask({ title: "T", description: "d" });
+    taskId = task.id;
   });
 
   test("create_subtask then update_subtask_status to done", async () => {
-    const made = await createSubtaskTool.execute({
+    const made = await testInvokeTool(createSubtaskTool, {
       title: "Write agenda",
       description: "Draft the meeting agenda",
       taskId,
@@ -51,7 +53,7 @@ describe("scrum subtask tools", () => {
     expect(made).toContain("Created subtask");
     const subtaskId = extractId(made);
 
-    await updateSubtaskStatusTool.execute({
+    await testInvokeTool(updateSubtaskStatusTool, {
       subtaskId,
       status: "done",
     });
@@ -64,13 +66,14 @@ describe("scrum subtask tools", () => {
   });
 
   test("create_subtask rejects a missing task", async () => {
-    expect(
-      createSubtaskTool.execute({
-        title: "S",
-        description: "d",
-        taskId: 999999,
-      }),
-    ).rejects.toThrow();
+    // testInvokeTool returns tool errors as "ERROR: ..." strings, so a thrown
+    // rejection surfaces as that string here; assert the failure is present.
+    const res = await testInvokeTool(createSubtaskTool, {
+      title: "S",
+      description: "d",
+      taskId: 999999,
+    });
+    expect(res).toContain("ERROR");
   });
 });
 

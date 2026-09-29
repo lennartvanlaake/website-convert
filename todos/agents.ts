@@ -27,21 +27,6 @@ export async function runManagerAgent(task: string) {
   // add SCRUM-middleware and RAG-middleware
   const agent = new ToolLoopAgent({
     model: mainModel,
-
-    tools: {
-      searchTickets: tool({
-        description: "Search support tickets",
-        inputSchema: z.object({
-          query: z.string(),
-        }),
-        contextSchema: z.object({
-          apiKey: z.string(),
-          accountId: z.string(),
-        }),
-        execute: async ({ query }, { context }) =>
-          searchTickets(query, context.accountId, context.apiKey),
-      }),
-    },
     tools: { createTask: createTaskTool, createSubtask: createSubtaskTool },
   });
 
