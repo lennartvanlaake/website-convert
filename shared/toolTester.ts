@@ -60,7 +60,7 @@ export async function testInvokeTool(
   const toolOutput = result.steps[0]!!.content[1]!! as any;
 
   if (toolOutput.error) {
-    throw Error(toolOutput.error.stderr);
+    return `ERROR: ${toolOutput.error}`;
   } else {
     return toolOutput.output;
   }

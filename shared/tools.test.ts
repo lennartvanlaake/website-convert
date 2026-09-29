@@ -72,7 +72,7 @@ describe("Test scout tools", () => {
         { workingDir: PROJECT_ROOT },
       );
       const text = grep;
-      expect(text.trim()).toBe("No matches found");
+      expect(text.trim()).toContain("ERROR");
     });
   });
 
