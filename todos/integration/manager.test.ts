@@ -1,18 +1,19 @@
-import { describe, it, expect } from "bun:test";
+import { describe, it, expect, beforeEach } from "bun:test";
 import { setupDatabase } from "../db";
 import { runManagerAgent } from "../agents";
 import { listTasks } from "../crud.ts";
+import { registerTelemetry } from "ai";
+import { DevToolsTelemetry } from "@ai-sdk/devtools";
 
 describe("Test the todo creation agent", () => {
-  it("Creates todos", async () => {
+  beforeEach(() => {
     setupDatabase(":memory:");
+    registerTelemetry(DevToolsTelemetry() as any);
+  });
 
-    // const result = await runManagerAgent(
-    //   "Create a task to do maths. Create subtasks for calculating 1+1, 1+2 and 2+2. You are not done until you have created three subtasks",
-    // );
-    //
-    const result = await runManagerAgent(
-      "List all the tools you have at your disposal",
+  it("Creates todos when explicitly asked", async () => {
+    await runManagerAgent(
+      "Create a task to do maths. Create subtasks for calculating 1+1, 1+2 and 2+2. You are not done until you have created three subtasks",
     );
 
     const all = await listTasks();

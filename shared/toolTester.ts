@@ -19,7 +19,7 @@ export async function testInvokeTool(
   toolDef: any,
   input: any,
   context: any = {},
-) {
+): Promise<any> {
   const model = new MockLanguageModelV4({
     doGenerate: [
       {
@@ -58,6 +58,8 @@ export async function testInvokeTool(
   // @ts-ignore
   //
   const toolOutput = result.steps[0]!!.content[1]!! as any;
+
+  //console.log(JSON.stringify(toolOutput, null, 2));
 
   if (toolOutput.error) {
     return `ERROR: ${toolOutput.error}`;

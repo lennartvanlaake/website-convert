@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "089ffb04-a16f-4522-87cd-04a1bb9b75cf",
+  "id": "2a03488f-cfa5-47b4-8c46-384ec30ca917",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "subtasks": {
@@ -9,8 +9,8 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "integer",
-          "primaryKey": true,
+          "type": "text",
+          "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
@@ -83,8 +83,8 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "integer",
-          "primaryKey": true,
+          "type": "text",
+          "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },

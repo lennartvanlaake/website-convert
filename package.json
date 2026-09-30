@@ -1,8 +1,12 @@
 {
-  "name": "website_convert",
+  "name": "llummox",
   "module": "index.ts",
   "type": "module",
   "private": true,
+  "scripts": {
+    "devtools": "bunx @ai-sdk/devtools@latest",
+    "todos:migrations": "bunx drizzle-kit generate --dialect sqlite --schema ./schema.ts"
+  },
   "devDependencies": {
     "@langchain/community": "^1.1.29",
     "@types/better-sqlite3": "^7.6.12",
@@ -13,6 +17,7 @@
     "typescript": "^5"
   },
   "dependencies": {
+    "@ai-sdk/devtools": "^1.0.26",
     "@ai-sdk/openai": "^4.0.66",
     "@ai-sdk/openai-compatible": "^3.0.48",
     "@anthropic-ai/sandbox-runtime": "^0.0.75",
@@ -27,6 +32,7 @@
     "directory-tree": "^3.6.0",
     "drizzle-orm": "^0.45.2",
     "langchain": "^1.5.10",
+    "pino": "^10.3.1",
     "sqlite-vec": "^0.1.9",
     "sqlite3": "^5.1.6"
   }

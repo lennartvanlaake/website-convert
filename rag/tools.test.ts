@@ -1,18 +1,16 @@
 import { test, expect, describe, beforeAll } from "bun:test";
-import { searchTool } from "./tools";
-import {
-  setupDatabase,
-  insertDoc,
-  insertDocChunk,
-  insertDocVector,
-  db,
-} from "./db";
+import { setupDatabase, db } from "./db";
+import { insertDoc, insertDocChunk, insertDocVector } from "./db";
 import { embed } from "./embed";
 import { EMBEDDING_DIMENSIONS } from "./constants";
+import { searchTool } from "./tools";
+import { testInvokeTool } from "../shared/toolTester";
 
 // ponytail: :memory: so we never touch ../db.sqlite, and each describe gets a
-// fresh in-memory DB. We seed via the real embed pipeline so the test checks
-// that searchRag returns the semantically closest chunk (not just "any" row).
+// fresh in-memory DB. We seed via the real embed pipeline so testInvokeTool
+// drives the tool through the ai SDK ToolLoopAgent (matching the shared/todos
+// pattern) and the test checks that searchRag returns the semantically closest
+// chunk (not just "any" row).
 
 describe("search tool", () => {
   beforeAll(() => {
@@ -45,17 +43,18 @@ describe("search tool", () => {
     await seed(corpus[1]!);
     await seed(corpus[2]!);
 
-    // invoke with parsed args (as an agent would pass). "dog -> pet -> animal"
-    // is semantically close to the cat doc, so the result text names "cats".
-    const result = await searchTool.invoke({
+    // invoke via the ai SDK agent. "dog -> pet -> animal" is semantically close
+    // to the cat doc, so the result text names "cats".
+    const result = await testInvokeTool(searchTool, {
       query: "A dog is a domestic pet animal kept by people.",
       type: "docs",
       topic: "cats",
     });
 
-    const text = result as string;
+    const text = result;
     expect(text).toContain("cats");
     expect(text).not.toContain("No results found");
+    expect(text).not.toContain("ERROR");
   });
 
   test("returns a friendly message when the corpus is empty", async () => {
@@ -65,22 +64,23 @@ describe("search tool", () => {
     db.query("DELETE FROM doc_chunks").run();
     db.query("DELETE FROM docs").run();
 
-    const result = await searchTool.invoke({
+    const result = await testInvokeTool(searchTool, {
       query: "anything at all",
       type: "summaries",
       topic: "widgets",
     });
     expect(result).toContain("No results found");
+    expect(result).not.toContain("ERROR");
   });
 
   test("rejects an invalid type", async () => {
-    // zod enum validation should fail for a type outside the allowed set.
-    await expect(
-      searchTool.invoke({
-        query: "q",
-        type: "nonsense" as never,
-        topic: "t",
-      }),
-    ).rejects.toThrow();
+    // zod enum validation fails for a type outside the allowed set; the ai SDK
+    // surfaces that as "ERROR: ..." via testInvokeTool.
+    const result = await testInvokeTool(searchTool, {
+      query: "q",
+      type: "nonsense" as never,
+      topic: "t",
+    });
+    expect(result).toContain("ERROR");
   });
 });

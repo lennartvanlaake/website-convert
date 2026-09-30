@@ -1,10 +1,10 @@
 import { setupDatabase } from "./db";
 import * as crud from "./crud";
 import { describe, it, expect } from "bun:test";
+import { randomUUIDv7 } from "bun";
 
 describe("crud tasks", () => {
   let db: ReturnType<typeof setupDatabase>; // ponytail: reassigned per test; tests call crud directly
-  const epicId = 1;
 
   it("create -> get -> list -> update -> delete with cascade", async () => {
     db = setupDatabase(":memory:");
@@ -13,7 +13,6 @@ describe("crud tasks", () => {
       title: "T1",
       description: "d",
     });
-    expect(created.id).toBeGreaterThan(0);
 
     const fetched = crud.getTask(created.id);
     expect(fetched?.title).toBe("T1");
@@ -43,7 +42,7 @@ describe("crud subtasks", () => {
       description: "d",
       taskId: task.id,
     });
-    expect(st.id).toBeGreaterThan(0);
+    expect(st.id).toBeTruthy();
 
     const all = await crud.listSubtasks(task.id);
     expect(all.map((s) => s.id)).toContain(st.id);

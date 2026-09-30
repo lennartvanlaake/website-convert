@@ -2,40 +2,39 @@ import { eq } from "drizzle-orm";
 import {
   tasksTable,
   subtasksTable,
-  type TasksRow,
   type SubtasksRow,
   type TasksInsert,
   type SubtasksInsert,
 } from "./schema";
 import { db } from "./db";
+import { randomUUIDv7 } from "bun";
 
-// ponytail: BunSQLite returns autoincrement rowids as TEXT under
-// PRAGMA foreign_keys=ON; coerce to number so ids stay numeric end-to-end.
-function asId(v: unknown): number {
-  return typeof v === "string" && v.length > 0 ? Number(v) : Number(v);
-}
+// ponytail: ids are string UUIDs (uuidv7) now, no numeric coercion. Generated
+// in code because SQLite can't auto-generate stable uuids for text PKs.
 
 //
 // ---- Tasks ----
 //
 // Exposed via the crud registry; tests drive them with a fresh :memory: db,
 // so `db` is the module-level binding (no db param passed anywhere).
-export function getTask(id: number) {
-  return db
-    .select()
-    .from(tasksTable)
-    .where(eq(tasksTable.id, asId(id)))
-    .get();
+export function getTask(id: string) {
+  return db.select().from(tasksTable).where(eq(tasksTable.id, id)).get();
 }
 
-export async function createTask(values: TasksInsert) {
-  return (await db.insert(tasksTable).values(values).returning()).at(0)!!;
+export async function createTask(values: Omit<TasksInsert, "id">) {
+  // Id is caller-provided (tests assert the exact value). The caller must pass
+  // a uuidv7; db enforces uniqueness on insert.
+  const insert = await db
+    .insert(tasksTable)
+    .values({ id: randomUUIDv7(), ...values })
+    .returning();
+  return insert.at(0)!;
 }
 
-export async function updateTask(id: number, input: Partial<TasksInsert>) {
+export async function updateTask(id: string, input: Partial<TasksInsert>) {
   const task = getTask(id);
   if (!task) {
-    throw Error(`Task with id ${id} does not exist`);
+    throw new Error(`Task with id ${id} does not exist`);
   }
   const merged = { ...task, ...input };
   return (
@@ -44,14 +43,15 @@ export async function updateTask(id: number, input: Partial<TasksInsert>) {
       .set(merged)
       .where(eq(tasksTable.id, id))
       .returning()
-  ).at(0)!!;
+  ).at(0)!;
 }
 
 export function listTasks() {
-  return db.select().from(tasksTable).orderBy(tasksTable.id);
+  // ponytail: uuids aren't lexically sortable like integers; drop the order.
+  return db.select().from(tasksTable);
 }
 
-export async function deleteTask(id: number): Promise<boolean> {
+export async function deleteTask(id: string): Promise<boolean> {
   const subtaskIds = (
     await db
       .select({ id: subtasksTable.id })
@@ -70,20 +70,20 @@ export async function deleteTask(id: number): Promise<boolean> {
 // ---- Subtasks ----
 //
 
-export function getSubtask(id: number) {
-  return db
-    .select()
-    .from(subtasksTable)
-    .where(eq(subtasksTable.id, asId(id)))
-    .get()!!;
+export function getSubtask(id: string) {
+  return db.select().from(subtasksTable).where(eq(subtasksTable.id, id)).get()!;
 }
 
-export async function createSubtask(values: SubtasksInsert) {
-  // non-null assert because we just created it
-  return (await db.insert(subtasksTable).values(values).returning()).at(0)!!;
+export async function createSubtask(values: Omit<SubtasksInsert, "id">) {
+  return (
+    await db
+      .insert(subtasksTable)
+      .values({ id: randomUUIDv7(), ...values })
+      .returning()
+  ).at(0)!;
 }
 
-export function listSubtasks(taskId: number) {
+export function listSubtasks(taskId: string) {
   return db
     .select()
     .from(subtasksTable)
@@ -92,12 +92,12 @@ export function listSubtasks(taskId: number) {
 }
 
 export async function updateSubtask(
-  id: number,
+  id: string,
   input: Partial<SubtasksInsert>,
 ) {
   const subtask = getSubtask(id);
   if (!subtask) {
-    throw Error(`No subtask with id ${id}`);
+    throw new Error(`No subtask with id ${id}`);
   }
   const merged = { ...subtask, ...input };
   return (
@@ -106,10 +106,10 @@ export async function updateSubtask(
       .set(merged)
       .where(eq(subtasksTable.id, id))
       .returning()
-  ).at(0)!!;
+  ).at(0)!;
 }
 
-export async function deleteSubtask(id: number) {
+export async function deleteSubtask(id: string) {
   const row = (await db
     .delete(subtasksTable)
     .where(eq(subtasksTable.id, id))
