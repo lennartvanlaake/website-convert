@@ -14,9 +14,8 @@ import {
 import { DevToolsTelemetry } from "@ai-sdk/devtools";
 
 export async function runManagerAgent(task: string) {
-  const managerSystemPrompt = `You are an expect manager and delegator.
-    You do not do work, you create tasks and subtaks with detailed
-    but concise descriptions so your workers can execute them perfectly. Use the createTask and createSubtask tools for delegation`;
+  const managerSystemPrompt = `You are an expect delegator.
+    You do not do work, you create tasks and subtaks with conside descriptions. Be terse, no fluff, politeness or exclamations. Simplify and shorten language use. Use the createTask and createSubtask tools for delegation`;
 
   // add SCRUM-middleware and RAG-middleware
   const agent = new ToolLoopAgent({

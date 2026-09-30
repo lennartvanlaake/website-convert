@@ -56,7 +56,7 @@ export const updateTaskStatusTool = tool({
 // ---- Subtask tools --------------------------------------------------------
 
 export const createSubtaskTool = tool({
-  description: "Create a subtask (a small concrete step inside a task)",
+  description: "Create a subtask. Requires a taskId obtained by creating task.",
   inputSchema: z.object({
     title: z.string().min(1).describe("Subtask title."),
     description: z
@@ -65,7 +65,7 @@ export const createSubtaskTool = tool({
       .describe(
         "Details of the step. Make this clear enough to be picked up by an LLM agent.",
       ),
-    taskId: z.string().describe("Task id this subtask belongs to."),
+    taskId: z.string().describe("Task id (uuid) this subtask belongs to."),
   }),
   outputSchema: z.object({
     taskId: z.string().nullable(),
