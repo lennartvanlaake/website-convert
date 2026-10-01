@@ -1,13 +1,11 @@
-import { setupDatabase } from "./db";
 import * as crud from "./crud";
+import { setupDatabase } from "./db";
 import { TaskStatus } from "./constants";
 import { describe, it, expect } from "bun:test";
 
 describe("crud tasks", () => {
-  let db: ReturnType<typeof setupDatabase>; // ponytail: reassigned per test; tests call crud directly
-
   it("create -> get -> list -> update -> delete with cascade", async () => {
-    db = setupDatabase(":memory:");
+    setupDatabase(":memory:");
 
     const created = await crud.createTask({
       title: "T1",
@@ -27,7 +25,7 @@ describe("crud tasks", () => {
   });
 
   it("getNextTask: in-progress beats todo, todo falls back to most-recent, null when empty", async () => {
-    db = setupDatabase(":memory:");
+    setupDatabase(":memory:");
 
     // in-progress takes priority over todo
     const prog = await crud.createTask({ title: "prog", description: "d" });
@@ -41,12 +39,14 @@ describe("crud tasks", () => {
     await crud.updateTask(prog.id, { status: TaskStatus["todo"] });
     expect(crud.getNextTask()?.id).toBe(todo.id);
 
-    // empty
+    // empty: delete both, then null
+    await crud.deleteTask(prog.id);
+    await crud.deleteTask(todo.id);
     expect(crud.getNextTask()).toBeNull();
   });
 
   it("getNextTask: ignores done tasks", async () => {
-    db = setupDatabase(":memory:");
+    setupDatabase(":memory:");
     const d = await crud.createTask({ title: "done", description: "d" });
     await crud.updateTask(d.id, { status: TaskStatus["done"] });
     expect(crud.getNextTask()).toBeNull();
@@ -54,10 +54,8 @@ describe("crud tasks", () => {
 });
 
 describe("crud subtasks", () => {
-  let db: ReturnType<typeof setupDatabase>; // ponytail: reassigned per test; tests call crud directly
-
   it("create -> list -> update -> delete", async () => {
-    db = setupDatabase(":memory:");
+    setupDatabase(":memory:");
     const task = await crud.createTask({
       title: "T",
       description: "d",
@@ -82,7 +80,7 @@ describe("crud subtasks", () => {
   });
 
   it("getNextSubtask: in-progress subtask of the task, falls back to most-recent todo, scoped to task, null when empty", async () => {
-    db = setupDatabase(":memory:");
+    setupDatabase(":memory:");
 
     // in-progress beats a newer todo subtask of the same task
     const task = await crud.createTask({ title: "T", description: "d" });
@@ -118,8 +116,5 @@ describe("crud subtasks", () => {
     expect(crud.getNextSubtask(task.id)).toBeNull();
     // but other's todo subtask is returned when asking for other
     expect(crud.getNextSubtask(other.id)?.id).toBe(otherSub.id);
-
-    console.log("DEBUG other.id:", other.id, "otherSub.id:", otherSub.id, "task.id:", task.id); console.log("otherSub.taskId:", otherSub.taskId);
-    expect(crud.getNextSubtask(other.id)).toBeNull();
   });
 });

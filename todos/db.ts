@@ -9,7 +9,8 @@ export let db: ReturnType<typeof drizzle>;
 
 export function setupDatabase(path: string) {
   try {
-    const sqlite = new Database(path);
+    const sqlite = new Database(path); // ponytail: local const, shadowed so the
+    // exported `db` reassignment inside still targets the module-level binding
     // Enable FK enforcement so cascade works (SQLite defaults to off).
     sqlite.run("PRAGMA foreign_keys = ON");
     db = drizzle({ client: sqlite });

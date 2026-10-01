@@ -78,7 +78,7 @@ export function getNextTask() {
     .select()
     .from(tasksTable)
     .where(eq(tasksTable.status, TaskStatus["todo"]))
-    .orderBy(desc(tasksTable.createdAt))
+    .orderBy(desc(tasksTable.createdAt), desc(tasksTable.id))
     .limit(1)
     .get();
 
