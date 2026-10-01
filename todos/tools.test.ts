@@ -4,8 +4,10 @@ import { setupDatabase, db } from "./db";
 import { subtasksTable } from "./schema";
 import {
   updateTaskStatusTool,
+  updateTaskNotesTool,
   createSubtaskTool,
   updateSubtaskStatusTool,
+  updateSubtaskNotesTool,
 } from "./tools";
 import { createTask, getTask, getSubtask } from "./crud";
 import { testInvokeTool } from "../shared/toolTester";
@@ -30,8 +32,30 @@ describe("scrum task tools", () => {
     expect(res.error).toBeNull();
 
     // Read the row back via the crud layer to confirm persistence.
-    const fetched = getTask(taskId)!!;
+    const fetched = getTask(taskId)!;
     expect(fetched.status).toBe("done");
+  });
+
+  test("update_task_notes sets the notes", async () => {
+    const task = await createTask({ title: "T", description: "d" });
+    const taskId = task.id;
+
+    const res = await testInvokeTool(updateTaskNotesTool, {
+      taskId,
+      notes: "needs design review",
+    });
+    expect(res.error).toBeNull();
+
+    const fetched = getTask(taskId)!;
+    expect(fetched.notes).toBe("needs design review");
+  });
+
+  test("update_task_notes errors on a missing task", async () => {
+    const res = await testInvokeTool(updateTaskNotesTool, {
+      taskId: "nope",
+      notes: "x",
+    });
+    expect(res.error).toBeTruthy();
   });
 });
 
@@ -67,14 +91,33 @@ describe("scrum subtask tools", () => {
     expect(fetched[0]!.status).toBe("done");
   });
 
-  test("create_subtask rejects a missing task", async () => {
-    // testInvokeTool returns tool errors as "ERROR: ..." strings, so a thrown
-    // rejection surfaces as that string here; assert the failure is present.
-    const res = (await testInvokeTool(createSubtaskTool, {
-      title: "S",
-      description: "d",
-      taskId: "blup",
+  test("update_subtask_notes sets the notes", async () => {
+    const made = (await testInvokeTool(createSubtaskTool, {
+      title: "Write agenda",
+      description: "Draft the meeting agenda",
+      taskId,
     })) as any;
+    const subtaskId: string = made.subTaskId;
+
+    const res = await testInvokeTool(updateSubtaskNotesTool, {
+      subtaskId,
+      notes: "wait on spec",
+    });
+    expect(res.error).toBeFalsy();
+
+    const fetched = await db
+      .select()
+      .from(subtasksTable)
+      .where(eq(subtasksTable.id, subtaskId));
+
+    expect(fetched[0]!.notes).toBe("wait on spec");
+  });
+
+  test("update_subtask_notes errors on a missing subtask", async () => {
+    const res = await testInvokeTool(updateSubtaskNotesTool, {
+      subtaskId: "ghost",
+      notes: "x",
+    });
     expect(res.error).toBeTruthy();
   });
 });

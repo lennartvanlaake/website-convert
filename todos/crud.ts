@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, and, desc, inArray, count } from "drizzle-orm";
 import {
   tasksTable,
   subtasksTable,
@@ -8,6 +8,8 @@ import {
 } from "./schema";
 import { db } from "./db";
 import { randomUUIDv7 } from "bun";
+import { TaskStatus } from "./constants";
+import { logger } from "../shared/utils";
 
 // ponytail: ids are string UUIDs (uuidv7) now, no numeric coercion. Generated
 // in code because SQLite can't auto-generate stable uuids for text PKs.
@@ -21,12 +23,10 @@ export function getTask(id: string) {
   return db.select().from(tasksTable).where(eq(tasksTable.id, id)).get();
 }
 
-export async function createTask(values: Omit<TasksInsert, "id">) {
-  // Id is caller-provided (tests assert the exact value). The caller must pass
-  // a uuidv7; db enforces uniqueness on insert.
+export async function createTask(values: Omit<TasksInsert, "id" | "status">) {
   const insert = await db
     .insert(tasksTable)
-    .values({ id: randomUUIDv7(), ...values })
+    .values({ id: randomUUIDv7(), status: TaskStatus["todo"], ...values })
     .returning();
   return insert.at(0)!;
 }
@@ -47,11 +47,10 @@ export async function updateTask(id: string, input: Partial<TasksInsert>) {
 }
 
 export function listTasks() {
-  // ponytail: uuids aren't lexically sortable like integers; drop the order.
   return db.select().from(tasksTable);
 }
 
-export async function deleteTask(id: string): Promise<boolean> {
+export async function deleteTask(id: string) {
   const subtaskIds = (
     await db
       .select({ id: subtasksTable.id })
@@ -66,6 +65,29 @@ export async function deleteTask(id: string): Promise<boolean> {
   return row.length > 0;
 }
 
+export function getNextTask() {
+  const progress = db
+    .select()
+    .from(tasksTable)
+    .where(eq(tasksTable.status, TaskStatus["in-progress"]))
+    .get();
+  if (progress) {
+    return progress;
+  }
+  const todo = db
+    .select()
+    .from(tasksTable)
+    .where(eq(tasksTable.status, TaskStatus["todo"]))
+    .orderBy(desc(tasksTable.createdAt))
+    .limit(1)
+    .get();
+
+  if (todo) {
+    return todo;
+  }
+  return null;
+}
+
 //
 // ---- Subtasks ----
 //
@@ -74,11 +96,46 @@ export function getSubtask(id: string) {
   return db.select().from(subtasksTable).where(eq(subtasksTable.id, id)).get()!;
 }
 
-export async function createSubtask(values: Omit<SubtasksInsert, "id">) {
+export function getNextSubtask(taskId: string) {
+  const progress = db
+    .select()
+    .from(subtasksTable)
+    .where(
+      and(
+        eq(subtasksTable.status, TaskStatus["in-progress"]),
+        eq(subtasksTable.taskId, taskId),
+      ),
+    )
+    .get();
+  if (progress) {
+    return progress;
+  }
+  const todo = db
+    .select()
+    .from(subtasksTable)
+    .where(
+      and(
+        eq(subtasksTable.status, TaskStatus["todo"]),
+        eq(subtasksTable.taskId, taskId),
+      ),
+    )
+    .orderBy(desc(subtasksTable.createdAt))
+    .limit(1)
+    .get();
+
+  if (todo) {
+    return todo;
+  }
+  return null;
+}
+
+export async function createSubtask(
+  values: Omit<SubtasksInsert, "id" | "status">,
+) {
   return (
     await db
       .insert(subtasksTable)
-      .values({ id: randomUUIDv7(), ...values })
+      .values({ id: randomUUIDv7(), status: TaskStatus["todo"], ...values })
       .returning()
   ).at(0)!;
 }
@@ -115,4 +172,19 @@ export async function deleteSubtask(id: string) {
     .where(eq(subtasksTable.id, id))
     .returning()) as SubtasksRow[];
   return row.length > 0;
+}
+
+export function todoSubtasks() {
+  const countResult = db
+    .select({ count: count() })
+    .from(subtasksTable)
+    .where(
+      inArray(subtasksTable.status, [
+        TaskStatus.todo,
+        TaskStatus["in-progress"],
+      ]),
+    )
+    .get();
+
+  return countResult?.count ?? 0;
 }

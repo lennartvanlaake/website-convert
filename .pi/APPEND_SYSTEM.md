@@ -5,10 +5,9 @@ Use **bun**, so tests are run with **bun test**. Package.json is in root dir `/h
 Working rules:
 
 - **Be terse.** Short commands, minimal diffs, terse explanations.
-- **Write tests** — We want high coverage of all production code. When debugging, edit reusable tests instead of creating one-off files to check a hypothesis.
+- **Work incrementally** - Keep edits as small as possible. If asked to write a test that is > 5 lines, write a part of the test, run it, then add more code. If asked to write 2 functions, write 1 function, test it, then write the second one. 
 - **Use the internet** - Search for answers online if a problem is difficult.
 - **Use tsc to check code** - We want our code to have no tsc, be typed properly and production-ready
-- Keep changes small and focused; prefer the shortest working diff.
 - Use the ponytail skill for code
 - Do not do anything you were not asked to do. If you see problems in files you work in, ask for permission to fix.
 - Use explicit input types, avoid explicit output types (so `function() { return "hello world" }` instead of `function(): String => { return "hello world" }`:w*n 

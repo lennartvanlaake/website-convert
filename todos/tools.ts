@@ -1,11 +1,8 @@
 import { z } from "zod/v4";
 import * as crud from "./crud";
 import { tool } from "ai";
+import { TASK_STATUSES } from "./constants";
 
-// Status vocabulary (Scrum-flavoured). These are the only accepted values; the
-// zod enums below enforce them so the model can't invent statuses.
-const TASK_STATUSES = ["todo", "in-progress", "done", "blocked"] as const;
-const SUBTASK_STATUSES = ["todo", "in-progress", "done"] as const;
 // ---- Task (story) tools ---------------------------------------------------
 
 export const createTaskTool = tool({
@@ -30,7 +27,7 @@ export const createTaskTool = tool({
 
 export const updateTaskStatusTool = tool({
   description:
-    "Move a task (story) between states. Use during planning: 'todo' (planned, not started), 'in-progress' (being done now), 'blocked' (impediment, use add_blocker), 'done'",
+    "Move a task (story) between states. Use during planning: 'todo' (planned, not started), 'in-progress' (being done now), 'blocked' (add reason in notes), 'done'",
   inputSchema: z.object({
     taskId: z.string().describe("Task id to update."),
     status: z
@@ -43,6 +40,31 @@ export const updateTaskStatusTool = tool({
   execute: async ({ taskId, status }) => {
     try {
       const task = await crud.updateTask(taskId, { status });
+      if (!task) {
+        return { error: `No task found with id ${taskId}.` };
+      }
+      return { error: null };
+    } catch (e) {
+      return { error: `error: ${(e as Error).message}` };
+    }
+  },
+});
+
+export const updateTaskNotesTool = tool({
+  description:
+    "Update the free-form notes of a task (story). Use for context, acceptance notes, or a block reason. Does not change status.",
+  inputSchema: z.object({
+    taskId: z.string().describe("Task id to update."),
+    notes: z
+      .string()
+      .describe("New notes text. Empty string clears the notes."),
+  }),
+  outputSchema: z.object({
+    error: z.string().nullable,
+  }),
+  execute: async ({ taskId, notes }) => {
+    try {
+      const task = await crud.updateTask(taskId, { notes });
       if (!task) {
         return { error: `No task found with id ${taskId}.` };
       }
@@ -106,7 +128,7 @@ export const updateSubtaskStatusTool = tool({
   inputSchema: z.object({
     subtaskId: z.string().describe("Subtask id to update."),
     status: z
-      .enum(SUBTASK_STATUSES)
+      .enum(TASK_STATUSES)
       .describe("New status: 'todo' | 'in-progress' | 'done'."),
   }),
   outputSchema: z.object({
@@ -115,6 +137,31 @@ export const updateSubtaskStatusTool = tool({
   execute: async ({ subtaskId, status }) => {
     try {
       const task = await crud.updateSubtask(subtaskId, { status });
+      if (!task) {
+        return { error: `No subtask found with id ${subtaskId}.` };
+      }
+      return { error: null };
+    } catch (e) {
+      return { error: `error: ${(e as Error).message}` };
+    }
+  },
+});
+
+export const updateSubtaskNotesTool = tool({
+  description:
+    "Update the free-form notes of a subtask. Use for step-level context or details. Does not change status.",
+  inputSchema: z.object({
+    subtaskId: z.string().describe("Subtask id to update."),
+    notes: z
+      .string()
+      .describe("New notes text. Empty string clears the notes."),
+  }),
+  outputSchema: z.object({
+    error: z.string().nullable,
+  }),
+  execute: async ({ subtaskId, notes }) => {
+    try {
+      const task = await crud.updateSubtask(subtaskId, { notes });
       if (!task) {
         return { error: `No subtask found with id ${subtaskId}.` };
       }
