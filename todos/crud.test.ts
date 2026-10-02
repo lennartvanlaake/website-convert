@@ -24,19 +24,19 @@ describe("crud tasks", () => {
     expect(updated?.status).toBe("in-progress");
   });
 
-  it("getNextTask: in-progress beats todo, todo falls back to most-recent, null when empty", async () => {
+  it("getNextTask: open subtask -> in-progress beats todo, closing subtask falls back to most-recent todo, null when empty", async () => {
     setupDatabase(":memory:");
 
-    // in-progress takes priority over todo
+    // in-progress is derived: an open (non-done) subtask on the task.
     const prog = await crud.createTask({ title: "prog", description: "d" });
+    await crud.createSubtask({ title: "open", description: "d", taskId: prog.id });
     const todo = await crud.createTask({ title: "todo", description: "d" });
-    await crud.updateTask(prog.id, { status: TaskStatus["in-progress"] });
-    expect(crud.getNextTask()?.id).toBe(prog.id);
+    const NEXT = await crud.getNextTask();
+    expect(NEXT?.id).toBe(prog.id);
 
-    // reset: no in-progress, fall back to most-recent todo (desc createdAt).
-    // todo is created last so it is genuinely the newest (createdAt is second-
-    // precision, so creation order disambiguates the tie).
-    await crud.updateTask(prog.id, { status: TaskStatus["todo"] });
+    // close the only subtask -> task collapses to todo, falls back to most-recent todo.
+    const onlySub = (await crud.listSubtasks(prog.id)).at(0)!;
+    await crud.updateSubtask(onlySub.id, { status: TaskStatus["done"] });
     expect(crud.getNextTask()?.id).toBe(todo.id);
 
     // empty: delete both, then null

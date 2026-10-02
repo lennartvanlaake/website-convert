@@ -1,4 +1,4 @@
-import { eq, and, desc, inArray, count } from "drizzle-orm";
+import { eq, and, desc, notInArray } from "drizzle-orm";
 import {
   tasksTable,
   subtasksTable,
@@ -65,14 +65,27 @@ export async function deleteTask(id: string) {
   return row.length > 0;
 }
 
+// ponytail: per-task subtask scan; O(task*sub) across all tasks. Fine for a
+// next-up lookup; a single indexed count join if this ever scales.
+function hasOpenSubtaskFor(taskId: string): boolean {
+  const subs = listSubtasks(taskId);
+  return subs.length > 0 && subs.some((s) => s.status !== TaskStatus["done"]);
+}
+
 export function getNextTask() {
-  const progress = db
-    .select()
+  // In-progress is derived from subtasks: at least one non-done subtask.
+  // Scan candidate tasks (non-done) and derive hasOpenSubtask in JS rather
+  // than a JOIN, which drizzle-orm nests under table names and would drop the
+  // flat task shape the callers expect.
+  const candidates = db
+    .select(tasksTable)
     .from(tasksTable)
-    .where(eq(tasksTable.status, TaskStatus["in-progress"]))
-    .get();
-  if (progress) {
-    return progress;
+    .where(notInArray(tasksTable.status, [TaskStatus["done"]]))
+    .all();
+  for (const task of candidates) {
+    if (hasOpenSubtaskFor(task.id)) {
+      return task;
+    }
   }
   const todo = db
     .select()
@@ -145,7 +158,8 @@ export function listSubtasks(taskId: string) {
     .select()
     .from(subtasksTable)
     .where(eq(subtasksTable.taskId, taskId))
-    .orderBy(subtasksTable.id);
+    .orderBy(subtasksTable.id)
+    .all();
 }
 
 export async function updateSubtask(
@@ -174,17 +188,4 @@ export async function deleteSubtask(id: string) {
   return row.length > 0;
 }
 
-export function todoSubtasks() {
-  const countResult = db
-    .select({ count: count() })
-    .from(subtasksTable)
-    .where(
-      inArray(subtasksTable.status, [
-        TaskStatus.todo,
-        TaskStatus["in-progress"],
-      ]),
-    )
-    .get();
 
-  return countResult?.count ?? 0;
-}
