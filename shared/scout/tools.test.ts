@@ -7,7 +7,7 @@ import {
   searchHtml,
   readLines,
 } from "./tools";
-import { testInvokeTool } from "./toolTester";
+import { testInvokeTool } from "../toolTester";
 
 const FIX = `${import.meta.dir}/fixtures`;
 

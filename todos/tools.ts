@@ -50,25 +50,55 @@ export const updateTaskStatusTool = tool({
   },
 });
 
-export const updateTaskNotesTool = tool({
+export const updateTaskTool = tool({
   description:
-    "Update the free-form notes of a task (story). Use for context, acceptance notes, or a block reason. Does not change status.",
+    "Update fields of a task (story). Providing a field changes it; omit it to leave it unchanged. Empty string clears a text field.",
   inputSchema: z.object({
     taskId: z.string().describe("Task id to update."),
+    title: z
+      .string()
+      .optional()
+      .describe("New title. Omit to leave unchanged."),
+    description: z
+      .string()
+      .optional()
+      .describe("New description. Omit to leave unchanged."),
+    status: z
+      .string()
+      .optional()
+      .describe("New status. Omit to leave unchanged."),
     notes: z
       .string()
-      .describe("New notes text. Empty string clears the notes."),
+      .optional()
+      .describe("New notes. Omit to leave unchanged."),
   }),
   outputSchema: z.object({
     error: z.string().nullable,
+    changes: z.object({
+      title: z.string(),
+      description: z.string(),
+      status: z.string(),
+      notes: z.string(),
+    }),
   }),
-  execute: async ({ taskId, notes }) => {
+  execute: async ({ taskId, title, description, status, notes }) => {
     try {
-      const task = await crud.updateTask(taskId, { notes });
-      if (!task) {
-        return { error: `No task found with id ${taskId}.` };
-      }
-      return { error: null };
+      const before = await crud.getTask(taskId);
+      if (!before) throw new Error(`Task with id ${taskId} does not exist`);
+      const changes = {
+        title: before.title,
+        description: before.description,
+        status: before.status,
+        notes: before.notes,
+      };
+
+      if (title !== undefined) changes.title = title;
+      if (description !== undefined) changes.description = description;
+      if (status !== undefined) changes.status = status;
+      if (notes !== undefined) changes.notes = notes;
+
+      await crud.updateTask(taskId, changes);
+      return { error: null, changes };
     } catch (e) {
       return { error: `error: ${(e as Error).message}` };
     }
@@ -122,36 +152,14 @@ export const createSubtaskTool = tool({
   },
 });
 
-export const updateSubtaskStatusTool = tool({
+export const updateSubtaskWorkerTool = tool({
   description:
-    "Mark a subtask's progress. Use to reflect daily work: 'todo' | 'in-progress' | 'done'. All subtasks 'done' is a good signal the parent task is close.",
+    "Update a subtask's status and notes in one call. Use to reflect daily work: 'todo' | 'in-progress' | 'done'. Empty notes clears the notes.",
   inputSchema: z.object({
     subtaskId: z.string().describe("Subtask id to update."),
     status: z
       .enum(TASK_STATUSES)
       .describe("New status: 'todo' | 'in-progress' | 'done'."),
-  }),
-  outputSchema: z.object({
-    error: z.string().nullable,
-  }),
-  execute: async ({ subtaskId, status }) => {
-    try {
-      const task = await crud.updateSubtask(subtaskId, { status });
-      if (!task) {
-        return { error: `No subtask found with id ${subtaskId}.` };
-      }
-      return { error: null };
-    } catch (e) {
-      return { error: `error: ${(e as Error).message}` };
-    }
-  },
-});
-
-export const updateSubtaskNotesTool = tool({
-  description:
-    "Update the free-form notes of a subtask. Use for step-level context or details. Does not change status.",
-  inputSchema: z.object({
-    subtaskId: z.string().describe("Subtask id to update."),
     notes: z
       .string()
       .describe("New notes text. Empty string clears the notes."),
@@ -159,15 +167,48 @@ export const updateSubtaskNotesTool = tool({
   outputSchema: z.object({
     error: z.string().nullable,
   }),
-  execute: async ({ subtaskId, notes }) => {
+  execute: async ({ subtaskId, status, notes }) => {
     try {
-      const task = await crud.updateSubtask(subtaskId, { notes });
-      if (!task) {
-        return { error: `No subtask found with id ${subtaskId}.` };
-      }
+      // empty-string notes = "no notes", so it does not overwrite the existing
+      // handoff notes (which would otherwise make the manager's handoff prompt
+      // dead and strand the worker on the same subtask forever).
+      const changes = { status };
+      if (notes && notes !== "") changes.notes = notes;
+
+      await crud.updateSubtask(subtaskId, changes);
       return { error: null };
     } catch (e) {
-      return { error: `error: ${(e as Error).message}` };
+      return { error: (e as Error).message };
+    }
+  },
+});
+
+export const updateSubtaskManagerTool = tool({
+  description:
+    "Update a subtask's status and notes in one call. Use to reflect daily work: 'todo' | 'in-progress' | 'done'. Empty notes clears the notes.",
+  inputSchema: z.object({
+    subtaskId: z.string().describe("Subtask id to update."),
+    status: z
+      .enum(TASK_STATUSES)
+      .describe("New status: 'todo' | 'in-progress' | 'done'."),
+    title: z.string(),
+    description: z.string(),
+  }),
+  outputSchema: z.object({
+    error: z.string().nullable,
+  }),
+  execute: async ({ subtaskId, status, title, description }) => {
+    try {
+      const changes = {
+        status: status,
+        title: title,
+        description: description,
+      };
+
+      await crud.updateSubtask(subtaskId, changes);
+      return { error: null };
+    } catch (e) {
+      return { error: (e as Error).message };
     }
   },
 });

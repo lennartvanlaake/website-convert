@@ -1,6 +1,6 @@
 import z from "zod/v4";
 import { $ } from "bun";
-import { sandboxCommand } from "../sandbox/sandbox";
+import { sandboxCommand } from "../../sandbox/sandbox";
 import { tool } from "ai";
 
 export const wc = tool({

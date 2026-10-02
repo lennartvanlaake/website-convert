@@ -11,14 +11,9 @@ import { randomUUIDv7 } from "bun";
 import { TaskStatus } from "./constants";
 import { logger } from "../shared/utils";
 
-// ponytail: ids are string UUIDs (uuidv7) now, no numeric coercion. Generated
-// in code because SQLite can't auto-generate stable uuids for text PKs.
-
 //
 // ---- Tasks ----
 //
-// Exposed via the crud registry; tests drive them with a fresh :memory: db,
-// so `db` is the module-level binding (no db param passed anywhere).
 export function getTask(id: string) {
   return db.select().from(tasksTable).where(eq(tasksTable.id, id)).get();
 }
@@ -65,33 +60,20 @@ export async function deleteTask(id: string) {
   return row.length > 0;
 }
 
-// ponytail: per-task subtask scan; O(task*sub) across all tasks. Fine for a
-// next-up lookup; a single indexed count join if this ever scales.
-function hasOpenSubtaskFor(taskId: string): boolean {
-  const subs = listSubtasks(taskId);
-  return subs.length > 0 && subs.some((s) => s.status !== TaskStatus["done"]);
-}
-
 export function getNextTask() {
-  // In-progress is derived from subtasks: at least one non-done subtask.
-  // Scan candidate tasks (non-done) and derive hasOpenSubtask in JS rather
-  // than a JOIN, which drizzle-orm nests under table names and would drop the
-  // flat task shape the callers expect.
-  const candidates = db
-    .select(tasksTable)
-    .from(tasksTable)
-    .where(notInArray(tasksTable.status, [TaskStatus["done"]]))
-    .all();
-  for (const task of candidates) {
-    if (hasOpenSubtaskFor(task.id)) {
-      return task;
-    }
+  const progress = db
+    .select()
+    .from(subtasksTable)
+    .where(and(eq(subtasksTable.status, TaskStatus["in-progress"])))
+    .get();
+  if (progress) {
+    return progress;
   }
   const todo = db
     .select()
-    .from(tasksTable)
-    .where(eq(tasksTable.status, TaskStatus["todo"]))
-    .orderBy(desc(tasksTable.createdAt), desc(tasksTable.id))
+    .from(subtasksTable)
+    .where(and(eq(subtasksTable.status, TaskStatus["todo"])))
+    .orderBy(desc(subtasksTable.createdAt))
     .limit(1)
     .get();
 
@@ -104,9 +86,36 @@ export function getNextTask() {
 //
 // ---- Subtasks ----
 //
+export function getSubtask(subtaskId: string) {
+  return db
+    .select()
+    .from(subtasksTable)
+    .where(eq(subtasksTable.id, subtaskId))
+    .get();
+}
+export function getSubtasks(taskId: string) {
+  return db
+    .select()
+    .from(subtasksTable)
+    .where(eq(subtasksTable.taskId, taskId))
+    .all();
+}
 
-export function getSubtask(id: string) {
-  return db.select().from(subtasksTable).where(eq(subtasksTable.id, id)).get()!;
+// ponytail: O(n) scan per update, global lock. Per-task locks if concurrency matters.
+export function recomputeTaskStatus(taskId: string) {
+  const subtasks = getSubtasks(taskId);
+  if (subtasks.length === 0) {
+    return TaskStatus["todo"];
+  }
+  const done = subtasks.filter((s) => s.status === TaskStatus["done"]);
+  const active = subtasks.some((s) => s.status !== TaskStatus["todo"]);
+  // ponytail: task is done only when ALL subtasks are done; an in-progress
+  // subtask keeps the task in-progress even alongside a done one.
+  return done.length === subtasks.length
+    ? TaskStatus["done"]
+    : active
+      ? TaskStatus["in-progress"]
+      : TaskStatus["todo"];
 }
 
 export function getNextSubtask(taskId: string) {
@@ -162,6 +171,10 @@ export function listSubtasks(taskId: string) {
     .all();
 }
 
+// TODO updating subtask status should update task status. Rules:
+// - all subtasks done: task done
+// - some subtasks done or in-progress: task in-progress
+// - all subtasks to-do: task todo
 export async function updateSubtask(
   id: string,
   input: Partial<SubtasksInsert>,
@@ -170,14 +183,16 @@ export async function updateSubtask(
   if (!subtask) {
     throw new Error(`No subtask with id ${id}`);
   }
-  const merged = { ...subtask, ...input };
-  return (
-    await db
-      .update(subtasksTable)
-      .set(merged)
-      .where(eq(subtasksTable.id, id))
-      .returning()
-  ).at(0)!;
+  const updated = (await db
+    .update(subtasksTable)
+    .set(input)
+    .where(eq(subtasksTable.id, id))
+    .returning()) as SubtasksRow[];
+  const parent = getTask(subtask.taskId!);
+  if (parent) {
+    await updateTask(parent.id, { status: recomputeTaskStatus(parent.id) });
+  }
+  return updated.at(0)!;
 }
 
 export async function deleteSubtask(id: string) {
@@ -187,5 +202,3 @@ export async function deleteSubtask(id: string) {
     .returning()) as SubtasksRow[];
   return row.length > 0;
 }
-
-

@@ -24,27 +24,6 @@ describe("crud tasks", () => {
     expect(updated?.status).toBe("in-progress");
   });
 
-  it("getNextTask: open subtask -> in-progress beats todo, closing subtask falls back to most-recent todo, null when empty", async () => {
-    setupDatabase(":memory:");
-
-    // in-progress is derived: an open (non-done) subtask on the task.
-    const prog = await crud.createTask({ title: "prog", description: "d" });
-    await crud.createSubtask({ title: "open", description: "d", taskId: prog.id });
-    const todo = await crud.createTask({ title: "todo", description: "d" });
-    const NEXT = await crud.getNextTask();
-    expect(NEXT?.id).toBe(prog.id);
-
-    // close the only subtask -> task collapses to todo, falls back to most-recent todo.
-    const onlySub = (await crud.listSubtasks(prog.id)).at(0)!;
-    await crud.updateSubtask(onlySub.id, { status: TaskStatus["done"] });
-    expect(crud.getNextTask()?.id).toBe(todo.id);
-
-    // empty: delete both, then null
-    await crud.deleteTask(prog.id);
-    await crud.deleteTask(todo.id);
-    expect(crud.getNextTask()).toBeNull();
-  });
-
   it("getNextTask: ignores done tasks", async () => {
     setupDatabase(":memory:");
     const d = await crud.createTask({ title: "done", description: "d" });
@@ -116,5 +95,63 @@ describe("crud subtasks", () => {
     expect(crud.getNextSubtask(task.id)).toBeNull();
     // but other's todo subtask is returned when asking for other
     expect(crud.getNextSubtask(other.id)?.id).toBe(otherSub.id);
+  });
+});
+
+describe("crud subtask -> task cascade", () => {
+  it("task status follows subtask status: all-todo -> todo", async () => {
+    setupDatabase(":memory:");
+    const task = await crud.createTask({ title: "T", description: "d" });
+    const s1 = await crud.createSubtask({
+      title: "s1",
+      description: "d",
+      taskId: task.id,
+    });
+    const s2 = await crud.createSubtask({
+      title: "s2",
+      description: "d",
+      taskId: task.id,
+    });
+    expect(crud.getTask(task.id)?.status).toBe(TaskStatus["todo"]);
+
+    await crud.updateSubtask(s1.id, { status: TaskStatus["in-progress"] });
+    expect(crud.getTask(task.id)?.status).toBe(TaskStatus["in-progress"]);
+
+    await crud.updateSubtask(s2.id, { status: TaskStatus["done"] });
+    // mixed done + in-progress -> in-progress
+    expect(crud.getTask(task.id)?.status).toBe(TaskStatus["in-progress"]);
+
+    await crud.updateSubtask(s1.id, { status: TaskStatus["done"] });
+    // all done -> done
+    expect(crud.getTask(task.id)?.status).toBe(TaskStatus["done"]);
+  });
+
+  it("task status resets to todo when the last active subtask goes back to todo", async () => {
+    setupDatabase(":memory:");
+    const task = await crud.createTask({ title: "T", description: "d" });
+    const s1 = await crud.createSubtask({
+      title: "s1",
+      description: "d",
+      taskId: task.id,
+    });
+    await crud.updateSubtask(s1.id, { status: TaskStatus["in-progress"] });
+    expect(crud.getTask(task.id)?.status).toBe(TaskStatus["in-progress"]);
+
+    await crud.updateSubtask(s1.id, { status: TaskStatus["todo"] });
+    expect(crud.getTask(task.id)?.status).toBe(TaskStatus["todo"]);
+  });
+
+  it("cascade only touches the parent task", async () => {
+    setupDatabase(":memory:");
+    const a = await crud.createTask({ title: "A", description: "d" });
+    const b = await crud.createTask({ title: "B", description: "d" });
+    const s = await crud.createSubtask({
+      title: "s",
+      description: "d",
+      taskId: a.id,
+    });
+    await crud.updateSubtask(s.id, { status: TaskStatus["done"] });
+    expect(crud.getTask(a.id)?.status).toBe(TaskStatus["done"]);
+    expect(crud.getTask(b.id)?.status).toBe(TaskStatus["todo"]);
   });
 });
